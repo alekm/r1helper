@@ -27,7 +27,12 @@ exports.handler = async (event, context) => {
 
   try {
     // Parse the path to determine region and target endpoint
-    const path = event.path.replace('/.netlify/functions/api-proxy', '');
+    let path = event.path.replace('/.netlify/functions/api-proxy', '');
+    
+    // Remove /api prefix if present (for production routing)
+    if (path.startsWith('/api')) {
+      path = path.substring(4); // Remove '/api'
+    }
     
     // Extract region from query parameters or default to 'na'
     const region = event.queryStringParameters?.region || 'na';

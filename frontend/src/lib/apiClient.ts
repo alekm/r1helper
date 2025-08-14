@@ -27,8 +27,10 @@ export function buildApiUrl(region: RuckusRegion, path: string): string {
     // In development, just append the path to the proxy base
     return `${baseUrl}${path}`;
   } else {
-    // In production, add region as query parameter
-    const url = new URL(`${baseUrl}${path}`, window.location.origin);
+    // In production, construct the path correctly for Netlify functions
+    // The path should be /api + the actual API path
+    const apiPath = path.startsWith('/') ? path : `/${path}`;
+    const url = new URL(`${baseUrl}${apiPath}`, window.location.origin);
     url.searchParams.set('region', region);
     return url.toString();
   }
