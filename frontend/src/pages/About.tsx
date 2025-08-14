@@ -77,19 +77,20 @@ export function About() {
               <div>
                 <h3 className="font-medium text-gray-900 mb-2">API Integration</h3>
                 <ul className="text-sm text-gray-600 space-y-1 list-disc list-inside">
-                  <li>Direct Ruckus One API integration</li>
+                  <li>Ruckus One API integration via secure proxy</li>
                   <li>OAuth2 client credentials authentication</li>
                   <li>Token caching and management</li>
+                  <li>Multi-region support (NA, EU, Asia)</li>
                 </ul>
               </div>
               
               <div>
                 <h3 className="font-medium text-gray-900 mb-2">Privacy & Security</h3>
                 <ul className="text-sm text-gray-600 space-y-1 list-disc list-inside">
-                  <li>100% client-side processing</li>
+                  <li>Client-side CSV processing and validation</li>
                   <li>No data stored on servers</li>
-                  <li>All operations happen in your browser</li>
-                  <li>Direct API communication with Ruckus One</li>
+                  <li>Secure API proxy for CORS handling</li>
+                  <li>Serverless functions with no data persistence</li>
                 </ul>
               </div>
             </div>
@@ -142,8 +143,8 @@ export function About() {
                 <div className="flex items-start space-x-3">
                   <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
                   <div>
-                    <p className="text-gray-900 font-bold text-base">Direct API Communication</p>
-                    <p className="text-sm text-gray-600">When uploading to Ruckus One, your data goes directly from your browser to Ruckus One's servers.</p>
+                    <p className="text-gray-900 font-bold text-base">Secure API Proxy</p>
+                    <p className="text-sm text-gray-600">API requests are proxied through secure serverless functions that don't store or process your data, only forward requests to Ruckus One.</p>
                   </div>
                 </div>
               </div>
