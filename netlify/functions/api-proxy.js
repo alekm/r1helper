@@ -44,6 +44,16 @@ exports.handler = async (event, context) => {
     // Construct the target URL
     const targetUrl = `${apiBase}${path}`;
     
+    // Debug logging
+    console.log('Proxy request:', {
+      method: event.httpMethod,
+      path: path,
+      region: region,
+      apiBase: apiBase,
+      targetUrl: targetUrl,
+      hasBody: !!event.body
+    });
+    
     // Prepare headers for the upstream request
     const upstreamHeaders = {};
     

@@ -95,6 +95,19 @@ export async function getAccessToken(creds: RuckusCredentials): Promise<string> 
       },
       region
     ),
+    // Alternative: Standard OAuth2 endpoint without tenant in path
+    () => requestToken(
+      `/oauth2/token`,
+      new URLSearchParams({
+        grant_type: 'client_credentials',
+        client_id: creds.clientId,
+        client_secret: creds.clientSecret,
+      }),
+      {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      region
+    ),
   ]
 
   let lastErr: unknown
