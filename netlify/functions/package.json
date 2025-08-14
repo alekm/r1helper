@@ -1,0 +1,12 @@
+{
+  "name": "r1helper-netlify-functions",
+  "version": "0.9b",
+  "description": "Netlify functions for R1Helper API proxy",
+  "main": "api-proxy.js",
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

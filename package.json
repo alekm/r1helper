@@ -1,0 +1,38 @@
+{
+  "name": "r1helper",
+  "version": "0.9b",
+  "description": "SmartZone to Ruckus One Migration Tool - Privacy-focused CSV conversion and API integration",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "preview": "cd frontend && npm run preview",
+    "install-deps": "cd frontend && npm install",
+    "clean": "cd frontend && rm -rf dist node_modules"
+  },
+  "keywords": [
+    "ruckus",
+    "smartzone",
+    "migration",
+    "csv",
+    "api",
+    "netlify",
+    "react",
+    "typescript"
+  ],
+  "author": "R1Helper Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/r1helper.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/r1helper/issues"
+  },
+  "homepage": "https://github.com/your-username/r1helper#readme",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}
