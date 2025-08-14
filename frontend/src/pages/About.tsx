@@ -4,9 +4,9 @@ export function About() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">About R1Helper</h1>
+        <h1 className="text-3xl font-bold text-gray-900">About R1Helper v0.9b</h1>
         <p className="text-gray-600 mt-2">
-          Simplifying Ruckus One cloud management for network administrators everywhere.
+          Simplifying SmartZone to Ruckus One migration for network administrators everywhere.
         </p>
       </div>
 
@@ -17,10 +17,10 @@ export function About() {
             <h2 className="text-xl font-semibold text-gray-900 mb-4">What is R1Helper?</h2>
             <div className="space-y-4 text-gray-700">
               <p>
-                R1Helper.com is a web-based tool designed to streamline the migration and 
-                management of Ruckus One cloud-managed networks. Whether you're migrating 
-                from SmartZone or managing an existing Ruckus One infrastructure, R1Helper 
-                provides the tools you need to work more efficiently.
+                R1Helper is a privacy-focused web-based tool designed to streamline the migration 
+                from SmartZone to Ruckus One cloud-managed networks. Whether you're converting 
+                SmartZone exports or uploading APs directly to Ruckus One, R1Helper provides 
+                the tools you need to work more efficiently and securely.
               </p>
               
               <p>
@@ -160,7 +160,7 @@ export function About() {
               
               <div className="flex space-x-4">
                 <a
-                  href="https://github.com/yourusername/r1helper"
+                  href="https://github.com/alekm/r1helper"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center space-x-2 text-primary-600 hover:text-primary-700 transition-colors"
