@@ -1,6 +1,7 @@
 [build]
   publish = "frontend/dist"
   functions = "netlify/functions"
+  command = "npm run install-deps && npm run build"
 
 [build.environment]
   NODE_VERSION = "18"
@@ -14,3 +15,6 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+[[plugins]]
+  package = "@netlify/plugin-functions-install-core"

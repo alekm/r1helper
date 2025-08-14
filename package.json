@@ -9,7 +9,11 @@
     "build": "cd frontend && npm run build",
     "preview": "cd frontend && npm run preview",
     "install-deps": "cd frontend && npm install",
-    "clean": "cd frontend && rm -rf dist node_modules"
+    "clean": "cd frontend && rm -rf dist node_modules",
+    "postinstall": "cd netlify/functions && npm install"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.7"
   },
   "keywords": [
     "ruckus",
@@ -25,12 +29,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/r1helper.git"
+    "url": "https://github.com/alekm/r1helper.git"
   },
   "bugs": {
-    "url": "https://github.com/your-username/r1helper/issues"
+    "url": "https://github.com/alekm/r1helper/issues"
   },
-  "homepage": "https://github.com/your-username/r1helper#readme",
+  "homepage": "https://github.com/alekm/r1helper#readme",
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=8.0.0"
