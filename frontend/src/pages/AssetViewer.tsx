@@ -52,7 +52,8 @@ interface WLAN {
 interface APGroup {
   id: string
   name: string
-  description?: string
+  description: string
+  isDefault: boolean
   [key: string]: unknown
 }
 
@@ -145,13 +146,48 @@ export function AssetViewer() {
       if (!data.venueId?.trim()) {
         throw new Error('Venue ID is required to pull AP Groups')
       }
-      const response = await apiGet(
+      
+      // First, get the list of AP Group IDs
+      const groupIdsResponse = await apiGet(
         data.r1Type,
         { tenantId: data.tenantId, clientId: data.clientId, clientSecret: data.clientSecret, region: data.region },
         `/venues/${data.venueId}/apGroups`,
         data.r1Type === 'msp' && data.mspId ? { mspId: data.mspId } : undefined
       )
-      const apGroups = Array.isArray(response) ? response : (response as { data?: APGroup[] }).data || []
+      
+      const groupIds = Array.isArray(groupIdsResponse) ? groupIdsResponse : (groupIdsResponse as { data?: string[] }).data || []
+      
+      if (groupIds.length === 0) {
+        setState(prev => ({ ...prev, loading: false, apGroups: [] }))
+        return
+      }
+      
+      // Then, fetch details for each AP Group
+      const apGroups: APGroup[] = []
+      for (const groupId of groupIds) {
+        try {
+          const groupResponse = await apiGet(
+            data.r1Type,
+            { tenantId: data.tenantId, clientId: data.clientId, clientSecret: data.clientSecret, region: data.region },
+            `/venues/${data.venueId}/apGroups/${groupId}`,
+            data.r1Type === 'msp' && data.mspId ? { mspId: data.mspId } : undefined
+          )
+          
+          const groupData = Array.isArray(groupResponse) ? groupResponse[0] : groupResponse
+          if (groupData && typeof groupData === 'object') {
+            apGroups.push({
+              id: String(groupData.id || groupId),
+              name: String(groupData.name || ''),
+              description: String(groupData.description || ''),
+              isDefault: Boolean(groupData.isDefault)
+            })
+          }
+        } catch (groupErr) {
+          console.warn(`Failed to fetch details for AP Group ${groupId}:`, groupErr)
+          // Continue with other groups even if one fails
+        }
+      }
+      
       setState(prev => ({ ...prev, loading: false, apGroups }))
     } catch (err) {
       setState(prev => ({ ...prev, loading: false, error: `Failed to pull AP Groups: ${err instanceof Error ? err.message : 'Unknown error'}` }))
@@ -399,8 +435,15 @@ export function AssetViewer() {
                             <div className="text-sm text-gray-600">{String(group.description)}</div>
                           )}
                         </div>
-                        <div className="text-xs text-gray-500">
-                          ID: {String(group.id || '')}
+                        <div className="flex items-center gap-2">
+                          {group.isDefault && (
+                            <span className="px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                              Default
+                            </span>
+                          )}
+                          <div className="text-xs text-gray-500">
+                            ID: {String(group.id || '')}
+                          </div>
                         </div>
                       </div>
                     ))}
