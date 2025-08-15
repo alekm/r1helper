@@ -29,6 +29,11 @@ interface MspCustomer {
   tenant_id: string
 }
 
+interface Venue {
+  id: string
+  name: string
+}
+
 interface UploadState {
   data: CsvData | null
   loading: boolean
@@ -36,6 +41,7 @@ interface UploadState {
   success?: string
   uploadProgress?: number
   mspCustomers?: MspCustomer[]
+  venues?: Venue[]
 }
 
 export function ApiUploader() {
@@ -66,7 +72,7 @@ export function ApiUploader() {
       venueId: '',
       region: 'na'
     })
-    setState(prev => ({ ...prev, error: undefined, success: undefined, mspCustomers: undefined }))
+    setState(prev => ({ ...prev, error: undefined, success: undefined, mspCustomers: undefined, venues: undefined }))
   }
 
   // Get data from navigation state
@@ -223,6 +229,24 @@ export function ApiUploader() {
     }
   }
 
+  const pullVenues = async () => {
+    setState(prev => ({ ...prev, loading: true, error: undefined, success: undefined }))
+    try {
+      const response = await apiGet(
+        credentials.r1Type,
+        { tenantId: credentials.tenantId, clientId: credentials.clientId, clientSecret: credentials.clientSecret, region: credentials.region },
+        '/venues',
+        undefined,
+        credentials.r1Type === 'msp' ? credentials.targetTenantId : undefined
+      )
+      
+      const venues = Array.isArray(response) ? response : (response as { data?: Venue[] }).data || []
+      setState(prev => ({ ...prev, loading: false, venues, success: `Successfully pulled ${venues.length} Venues` }))
+    } catch (err) {
+      setState(prev => ({ ...prev, loading: false, error: `Failed to pull venues: ${err instanceof Error ? err.message : 'Unknown error'}` }))
+    }
+  }
+
   const copyToClipboard = (data: unknown) => navigator.clipboard.writeText(JSON.stringify(data, null, 2))
 
   const downloadJson = (data: unknown, name: string) => {
@@ -234,6 +258,9 @@ export function ApiUploader() {
     a.click()
     URL.revokeObjectURL(url)
   }
+
+  // Validation functions
+  const isVenuesValid = credentials.tenantId && credentials.clientId && credentials.clientSecret
 
   const goBackToConverter = () => {
     navigate('/csv', { state: { convertedData: state.data } })
@@ -364,17 +391,6 @@ export function ApiUploader() {
             {credentials.r1Type === 'msp' && (
               <>
                 <div>
-                  <label className="form-label">MSP ID</label>
-                  <input
-                    type="text"
-                    value={credentials.mspId}
-                    onChange={(e) => updateCredentials({ mspId: e.target.value })}
-                    className="form-input"
-                    placeholder="your-msp-id"
-                  />
-                </div>
-                
-                <div>
                   <label className="form-label">Target Tenant ID</label>
                   <input
                     type="text"
@@ -384,7 +400,7 @@ export function ApiUploader() {
                     placeholder="target-tenant-id"
                   />
                   <p className="text-sm text-gray-500 mt-1">
-                    The tenant ID of the customer where APs will be uploaded (click on an End Customer above to fill this)
+                    The tenant ID of the customer where APs will be uploaded (click on an End Customer below to fill this)
                   </p>
                 </div>
                 
@@ -434,6 +450,67 @@ export function ApiUploader() {
                             </div>
                             <div className="text-xs text-gray-500">
                               ID: {String(customer.tenant_id || '').substring(0, 8)}...
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <Server className="w-5 h-5 text-orange-600" />
+                    <h3 className="text-lg font-semibold text-gray-900">Venues</h3>
+                  </div>
+                  <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-2">
+                    <div className="flex items-center gap-2 text-blue-700">
+                      <AlertCircle className="w-4 h-4" />
+                      <span className="text-sm font-medium">Tip:</span>
+                      <span className="text-sm">Click on any venue name below to automatically fill the Venue ID field above.</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={pullVenues} disabled={state.loading || !isVenuesValid} className={`btn flex-1 ${state.loading ? 'btn-copy' : isVenuesValid ? 'btn-download' : 'btn-secondary'}`}>
+                      <RefreshCw className={`w-4 h-4 ${state.loading ? 'animate-spin' : ''}`} />
+                      <span>Get Venues</span>
+                    </button>
+                    {state.venues && (
+                      <>
+                        <button onClick={() => copyToClipboard(state.venues)} className="btn btn-copy"><Copy className="w-4 h-4" /><span>Copy</span></button>
+                        <button onClick={() => downloadJson(state.venues, 'venues')} className="btn btn-download"><Download className="w-4 h-4" /><span>Download</span></button>
+                      </>
+                    )}
+                  </div>
+                  {state.venues && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <h4 className="font-medium text-gray-900 mb-2">Venues ({state.venues.length})</h4>
+                      <div className="space-y-2">
+                        {state.venues.map((venue, index) => (
+                          <div key={venue.id || index} className="flex items-center justify-between p-2 bg-white rounded border">
+                            <div>
+                              <div 
+                                className="font-medium cursor-pointer hover:text-blue-600 hover:underline transition-colors text-blue-700"
+                                onClick={() => {
+                                  updateCredentials({ venueId: String(venue.id || '') });
+                                  const element = event?.target as HTMLElement;
+                                  if (element) {
+                                    const originalText = element.textContent;
+                                    element.textContent = 'Selected!';
+                                    element.classList.add('text-green-600');
+                                    setTimeout(() => {
+                                      element.textContent = originalText;
+                                      element.classList.remove('text-green-600');
+                                    }, 1000);
+                                  }
+                                }}
+                                title="Click to select this venue ID"
+                              >
+                                {String(venue.name || '')}
+                              </div>
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              ID: {String(venue.id || '').substring(0, 8)}...
                             </div>
                           </div>
                         ))}
