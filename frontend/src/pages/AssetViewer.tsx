@@ -12,6 +12,7 @@ interface AssetViewerData {
   clientSecret: string
   region?: 'na' | 'eu' | 'asia'
   venueId?: string
+  targetTenantId?: string
 }
 
 interface AccessPoint {
@@ -141,6 +142,7 @@ export function AssetViewer() {
     setValue('clientSecret', '')
     setValue('r1Type', 'regular')
     setValue('venueId', '')
+    setValue('targetTenantId', '')
     setValue('region', 'na')
     setState(prev => ({ ...prev, error: undefined, success: undefined }))
   }
@@ -446,6 +448,13 @@ export function AssetViewer() {
                             <input type="text" {...register('venueId')} className="form-input" placeholder="venue-id" />
                             <p className="text-sm text-gray-600 mt-1">Required for AP Groups only.</p>
                           </div>
+                          {watch('r1Type') === 'msp' && (
+                            <div>
+                              <label className="form-label">Target Tenant ID (for customer operations)</label>
+                              <input type="text" {...register('targetTenantId')} className="form-input" placeholder="customer-tenant-id" />
+                              <p className="text-sm text-gray-600 mt-1">Fill this by clicking on a customer name below.</p>
+                            </div>
+                          )}
             <button type="button" onClick={testConnection} disabled={state.loading || !isFormValid} className={`btn w-full ${state.loading ? 'btn-copy' : isFormValid ? 'btn-download' : 'btn-secondary'}`}>
               <Server className="w-4 h-4" />
               <span>{state.loading ? 'Testing...' : 'Test Connection'}</span>
@@ -508,7 +517,7 @@ export function AssetViewer() {
                             <div 
                               className="font-medium cursor-pointer hover:text-blue-600 hover:underline transition-colors text-blue-700"
                               onClick={() => {
-                                setValue('tenantId', String(customer.tenant_id || ''));
+                                setValue('targetTenantId', String(customer.tenant_id || ''));
                                 const element = event?.target as HTMLElement;
                                 if (element) {
                                   const originalText = element.textContent;
