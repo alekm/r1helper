@@ -82,7 +82,8 @@ body {
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.5rem;
+  margin-left: 1rem;
 }
 
 .nav-link {
