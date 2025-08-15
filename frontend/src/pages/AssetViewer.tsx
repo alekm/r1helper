@@ -137,6 +137,12 @@ export function AssetViewer() {
   // Check if form is valid for APs and WLANs (venue ID is optional)
   const isAPsAndWLANsValid = isFormValid
 
+  // Check if form is valid for MSP Customers (tenant ID not required in MSP mode)
+  const isMspCustomersValid = formData.clientId?.trim() && 
+                             formData.clientSecret?.trim() &&
+                             formData.r1Type === 'msp' && 
+                             formData.mspId?.trim()
+
   // Clear form function
   const clearForm = () => {
     clearCredentials()
@@ -310,7 +316,7 @@ export function AssetViewer() {
     try {
       const data = watch()
       
-      console.log('MSP Customers API path: /mspCustomers')
+      console.log('MSP Customers API path: /mspCustomers (top-level query)')
       
       const response = await apiGet(
         data.r1Type,
@@ -492,11 +498,11 @@ export function AssetViewer() {
                   <div className="flex items-center gap-2 text-purple-700">
                     <AlertCircle className="w-4 h-4" />
                     <span className="text-sm font-medium">MSP Feature:</span>
-                    <span className="text-sm">View all End Customers (ECs) managed by this MSP account.</span>
+                    <span className="text-sm">View all End Customers (ECs) managed by this MSP account. Click on any customer name to fill the Tenant ID field.</span>
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={pullMspCustomers} disabled={state.loading || !isAPsAndWLANsValid} className={`btn flex-1 ${state.loading ? 'btn-copy' : isAPsAndWLANsValid ? 'btn-download' : 'btn-secondary'}`}>
+                  <button onClick={pullMspCustomers} disabled={state.loading || !isMspCustomersValid} className={`btn flex-1 ${state.loading ? 'btn-copy' : isMspCustomersValid ? 'btn-download' : 'btn-secondary'}`}>
                     <RefreshCw className={`w-4 h-4 ${state.loading ? 'animate-spin' : ''}`} />
                     <span>Get End Customers</span>
                   </button>
@@ -514,7 +520,27 @@ export function AssetViewer() {
                       {state.mspCustomers.map((customer, index) => (
                         <div key={customer.tenant_id || index} className="flex items-center justify-between p-2 bg-white rounded border">
                           <div>
-                            <div className="font-medium">{String(customer.name || '')}</div>
+                            <div 
+                              className="font-medium cursor-pointer hover:text-blue-600 hover:underline transition-colors text-blue-700"
+                              onClick={() => {
+                                // Fill the tenant-id input field with the customer tenant ID
+                                setValue('tenantId', String(customer.tenant_id || ''));
+                                // Show brief visual feedback
+                                const element = event?.target as HTMLElement;
+                                if (element) {
+                                  const originalText = element.textContent;
+                                  element.textContent = 'Selected!';
+                                  element.classList.add('text-green-600');
+                                  setTimeout(() => {
+                                    element.textContent = originalText;
+                                    element.classList.remove('text-green-600');
+                                  }, 1000);
+                                }
+                              }}
+                              title="Click to select this customer's tenant ID"
+                            >
+                              {String(customer.name || '')}
+                            </div>
                             <div className="text-sm text-gray-600">
                               {customer.city && `${String(customer.city)}, `}{customer.state && `${String(customer.state)} `}{customer.country && String(customer.country)}
                             </div>
