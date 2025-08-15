@@ -172,16 +172,20 @@ export async function apiGet(
   r1Type: R1Type,
   creds: RuckusCredentials,
   resourcePath: string,
-  msp?: MspScope
+  msp?: MspScope,
+  targetTenantId?: string
 ): Promise<unknown> {
   const token = await getAccessToken(creds)
   const path = buildUrl(r1Type, creds.tenantId, resourcePath)
   const region = creds.region || DEFAULT_REGION
   
+  // For MSP mode, use target tenant ID in header for customer-specific operations
+  const tenantIdForHeader = r1Type === 'msp' && targetTenantId ? targetTenantId : creds.tenantId
+  
   const res = await apiFetch(region, path, {
     headers: {
       Authorization: `Bearer ${token}`,
-      ...(r1Type === 'msp' && !resourcePath.startsWith('/mspCustomers') ? { 'x-rks-tenantid': creds.tenantId } : {}),
+      ...(r1Type === 'msp' && !resourcePath.startsWith('/mspCustomers') ? { 'x-rks-tenantid': tenantIdForHeader } : {}),
       ...(r1Type === 'msp' && msp?.mspId && !resourcePath.startsWith('/mspCustomers') ? { 'X-MSP-ID': msp.mspId } : {}),
       Accept: 'application/json',
     },

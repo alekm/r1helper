@@ -178,7 +178,8 @@ export function AssetViewer() {
         data.r1Type,
         { tenantId: data.tenantId, clientId: data.clientId, clientSecret: data.clientSecret, region: data.region },
         '/venues/aps',
-        undefined
+        undefined,
+        data.r1Type === 'msp' ? data.targetTenantId : undefined
       )
       const accessPoints = Array.isArray(response) ? response : (response as { data?: AccessPoint[] }).data || []
       setState(prev => ({ ...prev, loading: false, accessPoints, success: `Successfully pulled ${accessPoints.length} Access Points` }))
@@ -292,7 +293,8 @@ export function AssetViewer() {
         data.r1Type,
         { tenantId: data.tenantId, clientId: data.clientId, clientSecret: data.clientSecret, region: data.region },
         '/venues',
-        undefined
+        undefined,
+        data.r1Type === 'msp' ? data.targetTenantId : undefined
       )
       
       const venues = Array.isArray(response) ? response : (response as { data?: Venue[] }).data || []
