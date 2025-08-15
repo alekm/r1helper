@@ -269,11 +269,11 @@ export function AssetViewer() {
                     {state.accessPoints.map((ap, index) => (
                       <div key={ap.id || index} className="flex items-center justify-between p-2 bg-white rounded border">
                         <div>
-                          <div className="font-medium">{ap.name || ap.hostname || ap.id}</div>
-                          <div className="text-sm text-gray-600">{ap.model || ap.deviceModel} • {ap.ipAddress || ap.ip || 'N/A'}</div>
+                          <div className="font-medium">{String(ap.name || ap.hostname || ap.id || '')}</div>
+                          <div className="text-sm text-gray-600">{String(ap.model || ap.deviceModel || '')} • {String(ap.ipAddress || ap.ip || 'N/A')}</div>
                         </div>
                         <div className={`px-2 py-1 rounded text-xs font-medium ${(ap.status === 'online' || ap.state === 'online') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                          {ap.status || ap.state || 'unknown'}
+                          {String(ap.status || ap.state || 'unknown')}
                         </div>
                       </div>
                     ))}
