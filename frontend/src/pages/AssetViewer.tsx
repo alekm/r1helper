@@ -138,11 +138,11 @@ export function AssetViewer() {
   // Check if form is valid for APs and WLANs (venue ID is optional)
   const isAPsAndWLANsValid = isFormValid
 
-  // Check if form is valid for MSP Customers (tenant ID not required in MSP mode)
+  // Check if form is valid for MSP Customers (requires tenant ID for MSP mode)
   const isMspCustomersValid = formData.clientId?.trim() && 
                              formData.clientSecret?.trim() &&
                              formData.r1Type === 'msp' && 
-                             formData.mspId?.trim()
+                             formData.tenantId?.trim()
 
 
 
@@ -325,7 +325,7 @@ export function AssetViewer() {
         data.r1Type,
         { tenantId: data.tenantId, clientId: data.clientId, clientSecret: data.clientSecret, region: data.region },
         '/mspCustomers',
-        data.r1Type === 'msp' && data.mspId ? { mspId: data.mspId } : undefined
+        undefined // No MSP scope needed, uses tenant ID from credentials
       )
       
       const mspCustomers = Array.isArray(response) ? response : (response as { data?: MspCustomer[] }).data || []
@@ -503,7 +503,7 @@ export function AssetViewer() {
                   <div className="flex items-center gap-2 text-purple-700">
                     <AlertCircle className="w-4 h-4" />
                     <span className="text-sm font-medium">MSP Feature:</span>
-                    <span className="text-sm">View all End Customers (ECs) managed by this MSP account. Click on any customer name to fill the Tenant ID field.</span>
+                    <span className="text-sm">View all End Customers (ECs) managed by this MSP account. Click on any customer name to fill the Tenant ID field for that customer.</span>
                   </div>
                 </div>
                 <div className="flex gap-2">

@@ -165,8 +165,8 @@ export async function apiGet(
   const res = await apiFetch(region, path, {
     headers: {
       Authorization: `Bearer ${token}`,
-      ...(r1Type === 'msp' ? { 'x-rks-tenantid': creds.tenantId } : {}),
-      ...(r1Type === 'msp' && msp?.mspId ? { 'X-MSP-ID': msp.mspId } : {}),
+      ...(r1Type === 'msp' && !resourcePath.startsWith('/mspCustomers') ? { 'x-rks-tenantid': creds.tenantId } : {}),
+      ...(r1Type === 'msp' && msp?.mspId && !resourcePath.startsWith('/mspCustomers') ? { 'X-MSP-ID': msp.mspId } : {}),
       Accept: 'application/json',
     },
   })
