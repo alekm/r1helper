@@ -53,13 +53,28 @@ async function requestToken(
     }
     try {
       return await res.json()
-    } catch {
-      // No body but ok; treat as error without token
-      throw new Error(`${res.status} ${res.statusText} (no token in body or headers)`) 
+    } catch (parseError) {
+      // Try to get response as text for debugging
+      const responseText = await res.text()
+      console.error('JSON parse error:', parseError instanceof Error ? parseError.message : 'Unknown error', 'Response:', responseText.substring(0, 200))
+      throw new Error(`${res.status} ${res.statusText} (invalid JSON response)`) 
     }
   }
+  
+  // Handle error responses
   let detail = ''
-  try { detail = JSON.stringify(await res.json()) } catch {}
+  try { 
+    const errorResponse = await res.json()
+    detail = JSON.stringify(errorResponse)
+  } catch (parseError) {
+    // If JSON parsing fails, try to get as text
+    try {
+      const errorText = await res.text()
+      detail = errorText.substring(0, 200) // Limit length for error message
+    } catch {
+      detail = 'Unable to parse error response'
+    }
+  }
   throw new Error(`${res.status} ${res.statusText}${detail ? ` - ${detail}` : ''}`)
 }
 

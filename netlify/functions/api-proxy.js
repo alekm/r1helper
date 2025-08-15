@@ -93,15 +93,28 @@ exports.handler = async (event, context) => {
     // Make the request to Ruckus One API
     const response = await fetch(targetUrl, requestOptions);
     
-    // Get response body
+    // Get response body and handle different content types
     let responseBody;
     const contentType = response.headers.get('content-type');
     
-    if (contentType && contentType.includes('application/json')) {
-      responseBody = await response.json();
-    } else {
+    try {
+      if (contentType && contentType.includes('application/json')) {
+        responseBody = await response.json();
+      } else {
+        responseBody = await response.text();
+      }
+    } catch (parseError) {
+      console.error('Response parsing error:', parseError.message);
       responseBody = await response.text();
     }
+
+    // Debug logging for response
+    console.log('Proxy response:', {
+      status: response.status,
+      contentType: contentType,
+      bodyType: typeof responseBody,
+      bodyLength: typeof responseBody === 'string' ? responseBody.length : 'object'
+    });
 
     // Return the response
     return {
