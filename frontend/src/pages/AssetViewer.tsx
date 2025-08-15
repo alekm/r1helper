@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Download, Copy, Wifi, Server, AlertCircle, RefreshCw } from 'lucide-react'
+import { Download, Copy, Wifi, Server, AlertCircle, RefreshCw, FolderOpen } from 'lucide-react'
 import { apiGet } from '../lib/ruckusApi'
 
 interface AssetViewerData {
@@ -10,6 +10,7 @@ interface AssetViewerData {
   clientSecret: string
   mspId?: string
   region?: 'na' | 'eu' | 'asia'
+  venueId?: string
 }
 
 interface AccessPoint {
@@ -48,9 +49,17 @@ interface WLAN {
   [key: string]: unknown
 }
 
+interface APGroup {
+  id: string
+  name: string
+  description?: string
+  [key: string]: unknown
+}
+
 interface AssetDataState {
   accessPoints?: AccessPoint[]
   wlans?: WLAN[]
+  apGroups?: APGroup[]
   loading: boolean
   error?: string
 }
@@ -71,6 +80,9 @@ export function AssetViewer() {
                      formData.clientId?.trim() && 
                      formData.clientSecret?.trim() &&
                      (formData.r1Type !== 'msp' || formData.mspId?.trim())
+
+  // Check if venue ID is filled for AP Groups
+  const isVenueValid = formData.venueId?.trim()
 
   // token retrieval handled via lib/ruckusApi
 
@@ -123,6 +135,26 @@ export function AssetViewer() {
       setState(prev => ({ ...prev, loading: false, wlans: wifiNetworks }))
     } catch (err) {
       setState(prev => ({ ...prev, loading: false, error: `Failed to pull WLANs: ${err instanceof Error ? err.message : 'Unknown error'}` }))
+    }
+  }
+
+  const pullAPGroups = async () => {
+    setState(prev => ({ ...prev, loading: true }))
+    try {
+      const data = watch()
+      if (!data.venueId?.trim()) {
+        throw new Error('Venue ID is required to pull AP Groups')
+      }
+      const response = await apiGet(
+        data.r1Type,
+        { tenantId: data.tenantId, clientId: data.clientId, clientSecret: data.clientSecret, region: data.region },
+        `/venues/${data.venueId}/apGroups`,
+        data.r1Type === 'msp' && data.mspId ? { mspId: data.mspId } : undefined
+      )
+      const apGroups = Array.isArray(response) ? response : (response as { data?: APGroup[] }).data || []
+      setState(prev => ({ ...prev, loading: false, apGroups }))
+    } catch (err) {
+      setState(prev => ({ ...prev, loading: false, error: `Failed to pull AP Groups: ${err instanceof Error ? err.message : 'Unknown error'}` }))
     }
   }
 
@@ -229,6 +261,11 @@ export function AssetViewer() {
                 {errors.mspId && (<p className="text-red-600 text-sm mt-1">{errors.mspId.message}</p>)}
               </div>
             )}
+            <div>
+              <label className="form-label">Venue ID (for AP Groups)</label>
+              <input type="text" {...register('venueId')} className="form-input" placeholder="venue-id" />
+              <p className="text-sm text-gray-600 mt-1">Required to pull AP Groups from a specific venue</p>
+            </div>
             <button type="button" onClick={testConnection} disabled={state.loading || !isFormValid} className={`btn w-full ${state.loading ? 'btn-copy' : isFormValid ? 'btn-download' : 'btn-secondary'}`}>
               <Server className="w-4 h-4" />
               <span>{state.loading ? 'Testing...' : 'Test Connection'}</span>
@@ -328,6 +365,45 @@ export function AssetViewer() {
                         </div>
                       )
                     })}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <FolderOpen className="w-5 h-5 text-green-600" />
+                <h3 className="text-lg font-semibold text-gray-900">AP Groups</h3>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={pullAPGroups} disabled={state.loading || !isFormValid || !isVenueValid} className={`btn flex-1 ${state.loading ? 'btn-copy' : (isFormValid && isVenueValid) ? 'btn-download' : 'btn-secondary'}`}>
+                  <RefreshCw className={`w-4 h-4 ${state.loading ? 'animate-spin' : ''}`} />
+                  <span>Get AP Groups</span>
+                </button>
+                {state.apGroups && (
+                  <>
+                    <button onClick={() => copyToClipboard(state.apGroups)} className="btn btn-copy"><Copy className="w-4 h-4" /><span>Copy</span></button>
+                    <button onClick={() => downloadJson(state.apGroups, 'ap-groups')} className="btn btn-download"><Download className="w-4 h-4" /><span>Download</span></button>
+                  </>
+                )}
+              </div>
+              {state.apGroups && (
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-gray-900 mb-2">AP Groups ({state.apGroups.length})</h4>
+                  <div className="space-y-2">
+                    {state.apGroups.map((group, index) => (
+                      <div key={group.id || index} className="flex items-center justify-between p-2 bg-white rounded border">
+                        <div>
+                          <div className="font-medium">{String(group.name || group.id || '')}</div>
+                          {group.description && (
+                            <div className="text-sm text-gray-600">{String(group.description)}</div>
+                          )}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          ID: {String(group.id || '')}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
