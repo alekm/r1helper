@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Upload, ArrowLeft, CheckCircle, AlertCircle, FileText } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { getAccessToken, buildUrl, apiGet } from '../lib/ruckusApi'
+import { getAccessToken } from '../lib/ruckusApi'
 import { apiFetch } from '../lib/apiClient'
 
 interface CsvData {
