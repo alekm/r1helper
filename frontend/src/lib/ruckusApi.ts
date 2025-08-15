@@ -75,6 +75,12 @@ async function requestToken(
       detail = 'Unable to parse error response'
     }
   }
+  
+  // Simplify authentication error messages
+  if (res.status === 500 && detail.includes('maximum redirect reached')) {
+    throw new Error('Authentication failed - please check your credentials')
+  }
+  
   throw new Error(`${res.status} ${res.statusText}${detail ? ` - ${detail}` : ''}`)
 }
 
@@ -138,7 +144,17 @@ export async function getAccessToken(creds: RuckusCredentials): Promise<string> 
       continue
     }
   }
-  throw new Error(`Token request failed: ${lastErr instanceof Error ? lastErr.message : 'Unknown error'}`)
+  // Simplify token request error messages
+  if (lastErr instanceof Error) {
+    if (lastErr.message.includes('maximum redirect reached')) {
+      throw new Error('Authentication failed - please check your credentials')
+    }
+    if (lastErr.message.includes('500')) {
+      throw new Error('Authentication failed - please check your credentials')
+    }
+    throw new Error(`Authentication failed: ${lastErr.message}`)
+  }
+  throw new Error('Authentication failed - unknown error')
 }
 
 export function buildUrl(_r1Type: R1Type, tenantId: string, resourcePath: string): string {
