@@ -212,6 +212,48 @@ export async function apiGet(
   return responseData
 }
 
+export async function apiPost(
+  r1Type: R1Type,
+  creds: RuckusCredentials,
+  resourcePath: string,
+  data: unknown,
+  msp?: MspScope,
+  targetTenantId?: string
+): Promise<unknown> {
+  const token = await getAccessToken(creds)
+  const path = buildUrl(r1Type, creds.tenantId, resourcePath)
+  const region = creds.region || DEFAULT_REGION
+  
+  // For MSP mode, use target tenant ID in header for customer-specific operations
+  const tenantIdForHeader = r1Type === 'msp' && targetTenantId ? targetTenantId : creds.tenantId
+  
+  const finalHeaders = {
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+    ...(r1Type === 'msp' && !resourcePath.startsWith('/mspCustomers') ? { 'x-rks-tenantid': tenantIdForHeader } : {}),
+    ...(r1Type === 'msp' && msp?.mspId && !resourcePath.startsWith('/mspCustomers') ? { 'X-MSP-ID': msp.mspId } : {}),
+  }
+  
+  const res = await apiFetch(region, path, {
+    method: 'POST',
+    headers: finalHeaders,
+    body: JSON.stringify(data)
+  })
+  
+  if (!res.ok) {
+    let detail = ''
+    try { 
+      detail = JSON.stringify(await res.json()) 
+    } catch {
+      // Ignore JSON parsing errors for error details
+    }
+    throw new Error(`API request failed: ${res.status} ${res.statusText}${detail ? ` - ${detail}` : ''}`)
+  }
+  
+  const responseData = await res.json()
+  return responseData
+}
+
 export const RuckusEndpoints = {
   test: (r1Type: R1Type) => (r1Type === 'msp' ? '/organizations' : ''),
   accessPoints: '/access-points',

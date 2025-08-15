@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
-import { Upload, ArrowLeft, CheckCircle, AlertCircle, FileText } from 'lucide-react'
+import { Upload, ArrowLeft, CheckCircle, AlertCircle, FileText, Server, RefreshCw, Copy, Download } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { getAccessToken } from '../lib/ruckusApi'
-import { apiFetch } from '../lib/apiClient'
+import { apiGet, apiPost } from '../lib/ruckusApi'
 import { loadCredentials } from '../lib/formStorage'
 import { saveCredentials, clearCredentials } from '../lib/formStorage'
 
@@ -25,12 +24,18 @@ interface CsvData {
   rows: string[][]
 }
 
+interface MspCustomer {
+  name: string
+  tenant_id: string
+}
+
 interface UploadState {
   data: CsvData | null
   loading: boolean
   error?: string
   success?: string
   uploadProgress?: number
+  mspCustomers?: MspCustomer[]
 }
 
 export function ApiUploader() {
@@ -57,10 +62,11 @@ export function ApiUploader() {
       clientSecret: '',
       r1Type: 'regular',
       mspId: '',
+      targetTenantId: '',
       venueId: '',
       region: 'na'
     })
-    setState(prev => ({ ...prev, error: undefined, success: undefined }))
+    setState(prev => ({ ...prev, error: undefined, success: undefined, mspCustomers: undefined }))
   }
 
   // Get data from navigation state
@@ -76,56 +82,36 @@ export function ApiUploader() {
     setState(prev => ({ ...prev, loading: true, error: undefined, success: undefined }))
     
     try {
-      // Get access token
       setState(prev => ({ ...prev, uploadProgress: 10 }))
-      const token = await getAccessToken({
-        tenantId: credentials.tenantId,
-        clientId: credentials.clientId,
-        clientSecret: credentials.clientSecret,
-        region: credentials.region
-      })
+
+      // Get list of existing AP Groups in the venue using apiGet
+      const apGroupsResponse = await apiGet(
+        credentials.r1Type,
+        { tenantId: credentials.tenantId, clientId: credentials.clientId, clientSecret: credentials.clientSecret, region: credentials.region },
+        `/venues/${credentials.venueId}/apGroups`,
+        undefined,
+        credentials.r1Type === 'msp' ? credentials.targetTenantId : undefined
+      )
 
       setState(prev => ({ ...prev, uploadProgress: 30 }))
-
-      // Get list of existing AP Groups in the venue
-      const region = credentials.region || 'na'
-      const apGroupsPath = `/venues/${credentials.venueId}/apGroups`
-      const apGroupsResponse = await apiFetch(region, apGroupsPath, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'X-Tenant-ID': credentials.tenantId,
-          ...(credentials.r1Type === 'msp' && credentials.mspId ? { 'X-MSP-ID': credentials.mspId } : {})
-        }
-      })
-
-      if (!apGroupsResponse.ok) {
-        throw new Error(`Failed to fetch AP Groups: ${apGroupsResponse.status} ${apGroupsResponse.statusText}`)
-      }
-
-      const apGroupsData = await apGroupsResponse.json()
-      console.log('AP Groups response:', apGroupsData)
       
       // Extract group names and IDs from the response
       const existingApGroups = new Set<string>()
       const groupIdToNameMap = new Map<string, string>()
       
-      if (Array.isArray(apGroupsData)) {
-        for (const group of apGroupsData) {
+      if (Array.isArray(apGroupsResponse)) {
+        for (const group of apGroupsResponse) {
           const groupId = String(group.id || '')
           const groupName = String(group.name || '')
-          
-          console.log(`Processing group: ID="${groupId}", Name="${groupName}"`)
           
           if (groupId && groupName && groupName.trim() !== '') {
             existingApGroups.add(groupName.trim())
             groupIdToNameMap.set(groupName.trim(), groupId)
-            console.log(`Added group "${groupName.trim()}" with ID "${groupId}"`)
           } else if (groupId && group.isDefault) {
             // Handle default group (usually doesn't have a name)
             const defaultGroupName = 'Default'
             existingApGroups.add(defaultGroupName)
             groupIdToNameMap.set(defaultGroupName, groupId)
-            console.log(`Added default group "${defaultGroupName}" with ID "${groupId}"`)
           }
         }
       }
@@ -135,11 +121,6 @@ export function ApiUploader() {
       // Validate that all specified AP Groups in the CSV exist
       const csvApGroups = new Set(state.data.rows.map(row => row[3]).filter(groupId => groupId && groupId.trim() !== ''))
       const missingApGroups = [...csvApGroups].filter(groupId => !existingApGroups.has(groupId))
-
-      console.log('Found AP Groups:', Array.from(existingApGroups))
-      console.log('CSV AP Groups:', Array.from(csvApGroups))
-      console.log('Missing AP Groups:', missingApGroups)
-      console.log('Group ID to Name Map:', Object.fromEntries(groupIdToNameMap))
 
       if (missingApGroups.length > 0) {
         throw new Error(`The following AP Groups do not exist in venue ${credentials.venueId}: ${missingApGroups.join(', ')}. Please create these AP Groups first.`)
@@ -178,7 +159,6 @@ export function ApiUploader() {
         
         // Determine upload path based on whether AP Group is specified
         let apUploadPath: string
-        let uploadTarget: string
         
         if (apGroupId && apGroupId.trim() !== '') {
           // Look up the group ID from the name
@@ -189,30 +169,22 @@ export function ApiUploader() {
           
           // Upload to specific AP Group using the actual group ID
           apUploadPath = `/venues/${credentials.venueId}/apGroups/${actualGroupId}/aps`
-          uploadTarget = `AP Group "${apGroupId}"`
         } else {
           // Upload to venue level (no AP Group)
           apUploadPath = `/venues/${credentials.venueId}/aps`
-          uploadTarget = `venue level (no AP Group)`
         }
         
-        const response = await apiFetch(region, apUploadPath, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'X-Tenant-ID': credentials.tenantId,
-            ...(credentials.r1Type === 'msp' && credentials.mspId ? { 'X-MSP-ID': credentials.mspId } : {})
-          },
-          body: JSON.stringify(ap)
-        })
+        // Use apiPost for the upload
+        const response = await apiPost(
+          credentials.r1Type,
+          { tenantId: credentials.tenantId, clientId: credentials.clientId, clientSecret: credentials.clientSecret, region: credentials.region },
+          apUploadPath,
+          ap,
+          undefined,
+          credentials.r1Type === 'msp' ? credentials.targetTenantId : undefined
+        )
 
-        if (!response.ok) {
-          const errorText = await response.text()
-          throw new Error(`Failed to upload AP "${ap.name}" to ${uploadTarget}: ${response.status} ${response.statusText} - ${errorText}`)
-        }
-
-        results.push(await response.json())
+        results.push(response)
         
         // Update progress
         const progress = 60 + Math.floor((i + 1) / apiData.length * 30)
@@ -232,6 +204,35 @@ export function ApiUploader() {
         error: `Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}` 
       }))
     }
+  }
+
+  const pullMspCustomers = async () => {
+    setState(prev => ({ ...prev, loading: true, error: undefined, success: undefined }))
+    try {
+      const response = await apiGet(
+        credentials.r1Type,
+        { tenantId: credentials.tenantId, clientId: credentials.clientId, clientSecret: credentials.clientSecret, region: credentials.region },
+        '/mspCustomers',
+        undefined
+      )
+      
+      const mspCustomers = Array.isArray(response) ? response : (response as { data?: MspCustomer[] }).data || []
+      setState(prev => ({ ...prev, loading: false, mspCustomers, success: `Successfully pulled ${mspCustomers.length} End Customers` }))
+    } catch (err) {
+      setState(prev => ({ ...prev, loading: false, error: `Failed to pull MSP customers: ${err instanceof Error ? err.message : 'Unknown error'}` }))
+    }
+  }
+
+  const copyToClipboard = (data: unknown) => navigator.clipboard.writeText(JSON.stringify(data, null, 2))
+
+  const downloadJson = (data: unknown, name: string) => {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `ruckus-one-${name}-${Date.now()}.json`
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   const goBackToConverter = () => {
@@ -361,16 +362,86 @@ export function ApiUploader() {
             </div>
             
             {credentials.r1Type === 'msp' && (
-              <div>
-                <label className="form-label">MSP ID</label>
-                <input
-                  type="text"
-                  value={credentials.mspId}
-                  onChange={(e) => updateCredentials({ mspId: e.target.value })}
-                  className="form-input"
-                  placeholder="your-msp-id"
-                />
-              </div>
+              <>
+                <div>
+                  <label className="form-label">MSP ID</label>
+                  <input
+                    type="text"
+                    value={credentials.mspId}
+                    onChange={(e) => updateCredentials({ mspId: e.target.value })}
+                    className="form-input"
+                    placeholder="your-msp-id"
+                  />
+                </div>
+                
+                <div>
+                  <label className="form-label">Target Tenant ID</label>
+                  <input
+                    type="text"
+                    value={credentials.targetTenantId}
+                    onChange={(e) => updateCredentials({ targetTenantId: e.target.value })}
+                    className="form-input"
+                    placeholder="target-tenant-id"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">
+                    The tenant ID of the customer where APs will be uploaded (click on an End Customer above to fill this)
+                  </p>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <Server className="w-5 h-5 text-orange-600" />
+                    <h3 className="text-lg font-semibold text-gray-900">End Customers</h3>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={pullMspCustomers} disabled={state.loading || !credentials.tenantId || !credentials.clientId || !credentials.clientSecret} className={`btn flex-1 ${state.loading ? 'btn-copy' : 'btn-download'}`}>
+                      <RefreshCw className={`w-4 h-4 ${state.loading ? 'animate-spin' : ''}`} />
+                      <span>Get ECs</span>
+                    </button>
+                    {state.mspCustomers && (
+                      <>
+                        <button onClick={() => copyToClipboard(state.mspCustomers)} className="btn btn-copy"><Copy className="w-4 h-4" /><span>Copy</span></button>
+                        <button onClick={() => downloadJson(state.mspCustomers, 'msp-customers')} className="btn btn-download"><Download className="w-4 h-4" /><span>Download</span></button>
+                      </>
+                    )}
+                  </div>
+                  {state.mspCustomers && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <h4 className="font-medium text-gray-900 mb-2">End Customers ({state.mspCustomers.length})</h4>
+                      <div className="space-y-2">
+                        {state.mspCustomers.map((customer, index) => (
+                          <div key={customer.tenant_id || index} className="flex items-center justify-between p-2 bg-white rounded border">
+                            <div>
+                              <div 
+                                className="font-medium cursor-pointer hover:text-blue-600 hover:underline transition-colors text-blue-700"
+                                onClick={() => {
+                                  updateCredentials({ targetTenantId: String(customer.tenant_id || '') });
+                                  const element = event?.target as HTMLElement;
+                                  if (element) {
+                                    const originalText = element.textContent;
+                                    element.textContent = 'Selected!';
+                                    element.classList.add('text-green-600');
+                                    setTimeout(() => {
+                                      element.textContent = originalText;
+                                      element.classList.remove('text-green-600');
+                                    }, 1000);
+                                  }
+                                }}
+                                title="Click to select this customer's tenant ID"
+                              >
+                                {String(customer.name || '')}
+                              </div>
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              ID: {String(customer.tenant_id || '').substring(0, 8)}...
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
             )}
             
             <div>

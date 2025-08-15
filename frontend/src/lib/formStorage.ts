@@ -6,6 +6,7 @@ export interface FormCredentials {
   clientSecret: string
   r1Type: 'regular' | 'msp'
   mspId?: string
+  targetTenantId?: string
   venueId: string
   region: 'na' | 'eu' | 'asia'
 }
@@ -32,6 +33,7 @@ export const loadCredentials = (): FormCredentials => {
         clientSecret: parsed.clientSecret || '',
         r1Type: parsed.r1Type || 'regular',
         mspId: parsed.mspId || '',
+        targetTenantId: parsed.targetTenantId || '',
         venueId: parsed.venueId || '',
         region: parsed.region || 'na'
       }
@@ -47,6 +49,7 @@ export const loadCredentials = (): FormCredentials => {
     clientSecret: '',
     r1Type: 'regular',
     mspId: '',
+    targetTenantId: '',
     venueId: '',
     region: 'na'
   }
