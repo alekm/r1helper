@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ExternalLink, Github, Heart, FileText, X } from 'lucide-react'
+import { ExternalLink, Github, Heart, FileText, X, ChevronDown } from 'lucide-react'
 
 export function About() {
   const [showChangelog, setShowChangelog] = useState(false)
@@ -53,9 +53,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - List and Grid view modes
     - Improved display for datasets with 600+ Access Points
   - **Venue-Level API Support**
-    - Optional venue ID for APs and WLANs queries
-    - Dynamic API path construction based on venue ID
-    - Maintains backward compatibility with tenant-level queries
+    - Venue ID required for AP Groups queries
+    - Dynamic API path construction for AP Groups
+    - Tenant-level queries for APs and WLANs
 
 - **Privacy-Focused Architecture**
   - Client-side CSV processing
@@ -188,7 +188,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
               </li>
               <li className="flex items-start space-x-2">
                 <div className="w-2 h-2 bg-primary-600 rounded-full mt-2 flex-shrink-0"></div>
-                <span><strong>Venue-Level Management:</strong> Optional venue ID support for granular data access</span>
+                <span><strong>Venue-Level Management:</strong> Venue ID support for AP Groups data access</span>
               </li>
               <li className="flex items-start space-x-2">
                 <div className="w-2 h-2 bg-primary-600 rounded-full mt-2 flex-shrink-0"></div>
@@ -320,11 +320,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
                   <ExternalLink className="w-3 h-3" />
                 </a>
                 <button
-                  onClick={() => setShowChangelog(true)}
+                  onClick={() => {
+                    setShowChangelog(true);
+                    // Scroll to the modal when it opens
+                    setTimeout(() => {
+                      const modal = document.querySelector('.changelog-modal');
+                      if (modal) {
+                        modal.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      }
+                    }, 100);
+                  }}
                   className="flex items-center space-x-2 text-primary-600 hover:text-primary-700 transition-colors"
                 >
                   <FileText className="w-4 h-4" />
                   <span>View Changelog</span>
+                  <ChevronDown className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -354,7 +364,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
       {/* Changelog Modal */}
       {showChangelog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 changelog-modal">
           <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <h2 className="text-2xl font-bold text-gray-900">Changelog</h2>
