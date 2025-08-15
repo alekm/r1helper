@@ -200,7 +200,8 @@ export function AssetViewer() {
         data.r1Type,
         { tenantId: data.tenantId, clientId: data.clientId, clientSecret: data.clientSecret, region: data.region },
         '/networks',
-        undefined
+        undefined,
+        data.r1Type === 'msp' ? data.targetTenantId : undefined
       )
       const wifiNetworks = Array.isArray(response) ? response : (response as { data?: WLAN[] }).data || []
       setState(prev => ({ ...prev, loading: false, wlans: wifiNetworks, success: `Successfully pulled ${wifiNetworks.length} WLANs` }))
