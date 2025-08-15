@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Download, Copy, Wifi, Server, AlertCircle, RefreshCw, FolderOpen, Search, ChevronLeft, ChevronRight, Grid, List, CheckCircle } from 'lucide-react'
 import { apiGet } from '../lib/ruckusApi'
+import { saveCredentials, loadCredentials } from '../lib/formStorage'
+import React from 'react' // Added missing import for React.useEffect
 
 interface AssetViewerData {
   r1Type: 'regular' | 'msp'
@@ -84,13 +86,27 @@ export function AssetViewer() {
 
   const { register, watch, setValue, formState: { errors } } = useForm<AssetViewerData>({
     defaultValues: {
-      r1Type: 'regular',
-      region: 'na',
+      ...loadCredentials() // Load saved credentials with defaults
     }
   })
 
-  // Check if all required fields are filled
+  // Watch form data and save to localStorage when it changes
   const formData = watch()
+  
+  // Save credentials whenever form data changes
+  React.useEffect(() => {
+    saveCredentials({
+      tenantId: formData.tenantId || '',
+      clientId: formData.clientId || '',
+      clientSecret: formData.clientSecret || '',
+      r1Type: formData.r1Type || 'regular',
+      mspId: formData.mspId || '',
+      venueId: formData.venueId || '',
+      region: formData.region || 'na'
+    })
+  }, [formData.tenantId, formData.clientId, formData.clientSecret, formData.r1Type, formData.mspId, formData.venueId, formData.region])
+
+  // Check if all required fields are filled
   const isFormValid = formData.tenantId?.trim() && 
                      formData.clientId?.trim() && 
                      formData.clientSecret?.trim() &&

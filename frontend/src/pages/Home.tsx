@@ -9,7 +9,7 @@ export function Home() {
     "Browse Venues with click-to-copy functionality",
     "Upload APs directly to Ruckus One via API",
     "List and inspect WLANs/Networks with security and VLANs",
-    "Venue-level API support for granular data access",
+    "Venue ID support for AP Groups management",
     "Regular R1 and MSP-aware tenant routing",
     "OAuth2 client-credentials with token caching"
   ]

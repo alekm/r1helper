@@ -3,6 +3,8 @@ import { Upload, ArrowLeft, CheckCircle, AlertCircle, FileText } from 'lucide-re
 import { useLocation, useNavigate } from 'react-router-dom'
 import { getAccessToken } from '../lib/ruckusApi'
 import { apiFetch } from '../lib/apiClient'
+import { loadCredentials } from '../lib/formStorage'
+import { saveCredentials } from '../lib/formStorage'
 
 interface ApGroup {
   id: string
@@ -37,19 +39,18 @@ interface UploadState {
 
 export function ApiUploader() {
   const [state, setState] = useState<UploadState>({ loading: false, data: null })
-  const [credentials, setCredentials] = useState({
-    tenantId: '',
-    clientId: '',
-    clientSecret: '',
-    r1Type: 'regular' as 'regular' | 'msp',
-    mspId: '',
-    venueId: '',
-    region: 'na' as 'na' | 'eu' | 'asia'
-  })
+  const [credentials, setCredentials] = useState(loadCredentials())
   
   const location = useLocation()
   const navigate = useNavigate()
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Helper function to update credentials and save to localStorage
+  const updateCredentials = (updates: Partial<typeof credentials>) => {
+    const newCredentials = { ...credentials, ...updates }
+    setCredentials(newCredentials)
+    saveCredentials(newCredentials)
+  }
 
   // Get data from navigation state
   useEffect(() => {
@@ -256,7 +257,7 @@ export function ApiUploader() {
                 <label className="form-label">R1 Type</label>
                 <select 
                   value={credentials.r1Type}
-                  onChange={(e) => setCredentials(prev => ({ ...prev, r1Type: e.target.value as 'regular' | 'msp' }))}
+                  onChange={(e) => updateCredentials({ r1Type: e.target.value as 'regular' | 'msp' })}
                   className="form-select"
                 >
                   <option value="regular">Regular R1</option>
@@ -268,7 +269,7 @@ export function ApiUploader() {
                 <label className="form-label">Region</label>
                 <select 
                   value={credentials.region}
-                  onChange={(e) => setCredentials(prev => ({ ...prev, region: e.target.value as 'na' | 'eu' | 'asia' }))}
+                  onChange={(e) => updateCredentials({ region: e.target.value as 'na' | 'eu' | 'asia' })}
                   className="form-select"
                 >
                   <option value="na">North America</option>
@@ -283,7 +284,7 @@ export function ApiUploader() {
               <input
                 type="text"
                 value={credentials.tenantId}
-                onChange={(e) => setCredentials(prev => ({ ...prev, tenantId: e.target.value }))}
+                onChange={(e) => updateCredentials({ tenantId: e.target.value })}
                 className="form-input"
                 placeholder="your-tenant-id"
               />
@@ -295,7 +296,7 @@ export function ApiUploader() {
                 <input
                   type="text"
                   value={credentials.clientId}
-                  onChange={(e) => setCredentials(prev => ({ ...prev, clientId: e.target.value }))}
+                  onChange={(e) => updateCredentials({ clientId: e.target.value })}
                   className="form-input"
                   placeholder="your-client-id"
                 />
@@ -305,7 +306,7 @@ export function ApiUploader() {
                 <input
                   type="password"
                   value={credentials.clientSecret}
-                  onChange={(e) => setCredentials(prev => ({ ...prev, clientSecret: e.target.value }))}
+                  onChange={(e) => updateCredentials({ clientSecret: e.target.value })}
                   className="form-input"
                   placeholder="your-client-secret"
                 />
@@ -318,7 +319,7 @@ export function ApiUploader() {
                 <input
                   type="text"
                   value={credentials.mspId}
-                  onChange={(e) => setCredentials(prev => ({ ...prev, mspId: e.target.value }))}
+                  onChange={(e) => updateCredentials({ mspId: e.target.value })}
                   className="form-input"
                   placeholder="your-msp-id"
                 />
@@ -330,7 +331,7 @@ export function ApiUploader() {
               <input
                 type="text"
                 value={credentials.venueId}
-                onChange={(e) => setCredentials(prev => ({ ...prev, venueId: e.target.value }))}
+                onChange={(e) => updateCredentials({ venueId: e.target.value })}
                 className="form-input"
                 placeholder="venue-id"
               />
