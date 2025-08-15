@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Download, Copy, Wifi, Server, AlertCircle, RefreshCw, FolderOpen } from 'lucide-react'
+import { Download, Copy, Wifi, Server, AlertCircle, RefreshCw, FolderOpen, Search, ChevronLeft, ChevronRight, Grid, List } from 'lucide-react'
 import { apiGet } from '../lib/ruckusApi'
 
 interface AssetViewerData {
@@ -67,6 +67,12 @@ interface AssetDataState {
 
 export function AssetViewer() {
   const [state, setState] = useState<AssetDataState>({ loading: false })
+  
+  // AP display controls
+  const [apSearchTerm, setApSearchTerm] = useState('')
+  const [apCurrentPage, setApCurrentPage] = useState(1)
+  const [apViewMode, setApViewMode] = useState<'list' | 'grid'>('list')
+  const [apItemsPerPage] = useState(20)
 
   const { register, watch, formState: { errors } } = useForm<AssetViewerData>({
     defaultValues: {
@@ -120,6 +126,7 @@ export function AssetViewer() {
       )
       const accessPoints = Array.isArray(response) ? response : (response as { data?: AccessPoint[] }).data || []
       setState(prev => ({ ...prev, loading: false, accessPoints }))
+      resetAPDisplay() // Reset display controls when new data is loaded
     } catch (err) {
       setState(prev => ({ ...prev, loading: false, error: `Failed to pull access points: ${err instanceof Error ? err.message : 'Unknown error'}` }))
     }
@@ -266,6 +273,27 @@ export function AssetViewer() {
     URL.revokeObjectURL(url)
   }
 
+  // AP display helpers
+  const filteredAPs = state.accessPoints?.filter(ap => {
+    if (!apSearchTerm) return true
+    const searchLower = apSearchTerm.toLowerCase()
+    const name = String(ap.name || ap.hostname || ap.id || '').toLowerCase()
+    const model = String(ap.model || ap.deviceModel || '').toLowerCase()
+    const ip = String(ap.ipAddress || ap.ip || '').toLowerCase()
+    const status = String(ap.status || ap.state || '').toLowerCase()
+    return name.includes(searchLower) || model.includes(searchLower) || ip.includes(searchLower) || status.includes(searchLower)
+  }) || []
+
+  const totalPages = Math.ceil(filteredAPs.length / apItemsPerPage)
+  const startIndex = (apCurrentPage - 1) * apItemsPerPage
+  const endIndex = startIndex + apItemsPerPage
+  const currentAPs = filteredAPs.slice(startIndex, endIndex)
+
+  const resetAPDisplay = () => {
+    setApSearchTerm('')
+    setApCurrentPage(1)
+  }
+
   return (
     <div className="space-y-8">
       <div className="text-center">
@@ -358,20 +386,96 @@ export function AssetViewer() {
               </div>
               {state.accessPoints && (
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <h4 className="font-medium text-gray-900 mb-2">Access Points ({state.accessPoints.length})</h4>
-                  <div className="space-y-2">
-                    {state.accessPoints.map((ap, index) => (
-                      <div key={ap.id || index} className="flex items-center justify-between p-2 bg-white rounded border">
-                        <div>
-                          <div className="font-medium">{String(ap.name || ap.hostname || ap.id || '')}</div>
-                          <div className="text-sm text-gray-600">{String(ap.model || ap.deviceModel || '')} • {String(ap.ipAddress || ap.ip || 'N/A')}</div>
-                        </div>
-                        <div className={`px-2 py-1 rounded text-xs font-medium ${(ap.status === 'online' || ap.state === 'online') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                          {String(ap.status || ap.state || 'unknown')}
-                        </div>
-                      </div>
-                    ))}
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="font-medium text-gray-900">
+                      Access Points ({filteredAPs.length} of {state.accessPoints.length})
+                      {apSearchTerm && <span className="text-sm text-gray-500 ml-2">(filtered)</span>}
+                    </h4>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setApViewMode('list')}
+                        className={`p-1 rounded ${apViewMode === 'list' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
+                      >
+                        <List className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => setApViewMode('grid')}
+                        className={`p-1 rounded ${apViewMode === 'grid' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
+                      >
+                        <Grid className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
+                  
+                  {/* Search */}
+                  <div className="mb-4">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        type="text"
+                        placeholder="Search APs by name, model, IP, or status..."
+                        value={apSearchTerm}
+                        onChange={(e) => {
+                          setApSearchTerm(e.target.value)
+                          setApCurrentPage(1) // Reset to first page when searching
+                        }}
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+
+                  {/* AP List/Grid */}
+                  {currentAPs.length > 0 ? (
+                    <>
+                      <div className={apViewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3' : 'space-y-2'}>
+                        {currentAPs.map((ap, index) => (
+                          <div key={ap.id || index} className={`flex items-center justify-between p-3 bg-white rounded border ${apViewMode === 'grid' ? 'flex-col items-start space-y-2' : ''}`}>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium truncate">{String(ap.name || ap.hostname || ap.id || '')}</div>
+                              <div className="text-sm text-gray-600 truncate">
+                                {String(ap.model || ap.deviceModel || '')} • {String(ap.ipAddress || ap.ip || 'N/A')}
+                              </div>
+                            </div>
+                            <div className={`px-2 py-1 rounded text-xs font-medium whitespace-nowrap ${(ap.status === 'online' || ap.state === 'online') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                              {String(ap.status || ap.state || 'unknown')}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Pagination */}
+                      {totalPages > 1 && (
+                        <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+                          <div className="text-sm text-gray-600">
+                            Showing {startIndex + 1}-{Math.min(endIndex, filteredAPs.length)} of {filteredAPs.length} APs
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => setApCurrentPage(prev => Math.max(1, prev - 1))}
+                              disabled={apCurrentPage === 1}
+                              className="p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <ChevronLeft className="w-4 h-4" />
+                            </button>
+                            <span className="text-sm text-gray-600">
+                              Page {apCurrentPage} of {totalPages}
+                            </span>
+                            <button
+                              onClick={() => setApCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                              disabled={apCurrentPage === totalPages}
+                              className="p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <ChevronRight className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      {apSearchTerm ? 'No APs match your search criteria' : 'No APs found'}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
