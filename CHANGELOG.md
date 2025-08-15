@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.9b] - 2025-08-14
+## [1.0.0] - 2025-08-14
 
 ### Added
 - **SmartZone to Ruckus One CSV Converter**
@@ -28,22 +28,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Asia: `https://api.asia.ruckus.cloud`
   - Automatic region selection in UI
 
+- **Asset Viewer with Advanced Features**
+  - Browse Ruckus One APs, WLANs, and AP Groups
+  - Real-time API integration with venue-level support
+  - Multi-region support
+  - **AP Groups Management**
+    - Two-step API process for detailed AP Group information
+    - Display AP Group name, description, and default status
+    - Copy and download functionality for AP Group data
+  - **Venues Management**
+    - Get all venues in tenant with `/venues` endpoint
+    - Click-to-copy venue IDs for easy reference
+    - Visual feedback for copy actions
+    - Copy and download functionality for venues data
+  - **Enhanced AP Display**
+    - Search functionality for large AP datasets
+    - Pagination controls for better performance
+    - List and Grid view modes
+    - Improved display for datasets with 600+ Access Points
+  - **Venue-Level API Support**
+    - Optional venue ID for APs and WLANs queries
+    - Dynamic API path construction based on venue ID
+    - Maintains backward compatibility with tenant-level queries
+
 - **Privacy-Focused Architecture**
   - Client-side CSV processing
   - No data storage on servers
   - Minimal API proxy for CORS handling
   - Netlify Functions for production deployment
 
-- **Asset Viewer**
-  - Browse Ruckus One APs and WLANs
-  - Real-time API integration
-  - Multi-region support
-
 - **Modern UI/UX**
   - React 18 with TypeScript
   - Tailwind CSS styling
   - Responsive design
   - Intuitive navigation
+  - **Enhanced Navigation**
+    - Improved spacing between nav items and logo
+    - Better visual separation for cleaner appearance
+  - **Interactive Elements**
+    - Click-to-copy functionality with visual feedback
+    - Hover effects and transitions
+    - Loading states and error handling
+
+### Changed
+- **Code Quality Improvements**
+  - Comprehensive ESLint cleanup
+  - TypeScript type safety enhancements
+  - Removed unused variables and parameters
+  - Fixed unnecessary escape characters
+  - Improved error handling throughout application
+- **UI/UX Enhancements**
+  - Better visual feedback for user interactions
+  - Improved spacing and layout consistency
+  - Enhanced accessibility with proper tooltips
+  - Cleaner navigation bar design
 
 ### Technical Features
 - **Development Environment**
@@ -70,6 +108,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Netlify deployment guide
 - API integration documentation
 - Privacy and security documentation
+- Embedded changelog in About page
+
+## [0.9b] - 2025-08-14
+
+### Added
+- Initial release with core CSV conversion functionality
+- Basic API integration framework
+- Multi-region support foundation
+- Asset viewer with basic AP and WLAN browsing
+
+### Technical Features
+- React 18 with TypeScript setup
+- Tailwind CSS styling
+- Vite development environment
+- Netlify deployment configuration
 
 ## [Unreleased]
 
@@ -79,3 +132,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced error handling
 - Performance optimizations
 - Additional Ruckus One API endpoints
+- Advanced filtering and search capabilities
+- Bulk operations for AP management

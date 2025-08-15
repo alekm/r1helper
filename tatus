@@ -1,0 +1,10 @@
+[33ma7ef311[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Disable Asset Viewer buttons until all required fields are filled
+[33m33290ee[m Support venue-level AP uploads when AP Group is blank or NULL
+[33m98af96d[m Fix build: Remove unused imports from ApiUploader
+[33m4c74ff3[m Fix API routing: Use apiFetch instead of direct fetch for venue operations
+[33mea031e9[m Improve error handling: Better JSON parsing and response debugging
+[33m98b9cea[m Fix API proxy path: Remove /api prefix in Netlify function
+[33m9c782d4[m Update About page: Correct API communication description for current architecture
+[33m55b699c[m Update About page: Fix GitHub link and add v0.9b version info
+[33m3ece7f9[m Fix OAuth2 endpoint: Add alternative token endpoint and debug logging
+[33m317d8f9[m Fix Netlify deployment: Add node-fetch dependency and functions install plugin
