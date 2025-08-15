@@ -180,16 +180,12 @@ export function AssetViewer() {
     try {
       const data = watch()
       
-      // Determine the API path based on whether venue ID is provided
-      const venueId = data.venueId?.trim()
-      const apiPath = venueId ? `/venues/${venueId}/networks` : '/networks'
-      
-      console.log('WLANs API path:', apiPath)
+      console.log('WLANs API path: /networks')
       
       const response = await apiGet(
         data.r1Type,
         { tenantId: data.tenantId, clientId: data.clientId, clientSecret: data.clientSecret, region: data.region },
-        apiPath,
+        '/networks',
         data.r1Type === 'msp' && data.mspId ? { mspId: data.mspId } : undefined
       )
       const wifiNetworks = Array.isArray(response) ? response : (response as { data?: WLAN[] }).data || []
@@ -417,11 +413,11 @@ export function AssetViewer() {
                 {errors.mspId && (<p className="text-red-600 text-sm mt-1">{errors.mspId.message}</p>)}
               </div>
             )}
-            <div>
-              <label className="form-label">Venue ID (for AP Groups)</label>
-              <input type="text" {...register('venueId')} className="form-input" placeholder="venue-id" />
-              <p className="text-sm text-gray-600 mt-1">Required for AP Groups. Leave blank for tenant-level data.</p>
-            </div>
+                                      <div>
+                            <label className="form-label">Venue ID (for AP Groups)</label>
+                            <input type="text" {...register('venueId')} className="form-input" placeholder="venue-id" />
+                            <p className="text-sm text-gray-600 mt-1">Required for AP Groups only.</p>
+                          </div>
             <button type="button" onClick={testConnection} disabled={state.loading || !isFormValid} className={`btn w-full ${state.loading ? 'btn-copy' : isFormValid ? 'btn-download' : 'btn-secondary'}`}>
               <Server className="w-4 h-4" />
               <span>{state.loading ? 'Testing...' : 'Test Connection'}</span>
