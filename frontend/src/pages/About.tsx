@@ -308,7 +308,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
                 and feature requests from the community.
               </p>
               
-              <div className="flex space-x-4">
+              <div className="flex space-x-6">
                 <a
                   href="https://github.com/alekm/r1helper"
                   target="_blank"
