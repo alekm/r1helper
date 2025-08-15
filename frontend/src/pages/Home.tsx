@@ -47,7 +47,7 @@ export function Home() {
       <div className="bg-white rounded-2xl shadow-xl p-10 border border-gray-100">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">What you can do</h2>
-          <p className="text-gray-600 text-lg">Everything you need to migrate from SmartZone and manage your Ruckus One tenant</p>
+          <p className="text-gray-600 text-lg">Essential tools for SmartZone migration and Ruckus One asset management</p>
         </div>
         
         <div className="grid lg:grid-cols-3 gap-8">
