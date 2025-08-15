@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Download, Copy, Wifi, Server, AlertCircle, RefreshCw, FolderOpen, Search, ChevronLeft, ChevronRight, Grid, List, CheckCircle } from 'lucide-react'
+import { Download, Copy, Wifi, Server, AlertCircle, RefreshCw, FolderOpen, Search, ChevronLeft, ChevronRight, Grid, List, CheckCircle, Users } from 'lucide-react'
 import { apiGet } from '../lib/ruckusApi'
 import { saveCredentials, loadCredentials, clearCredentials } from '../lib/formStorage'
 import React from 'react' // Added missing import for React.useEffect
@@ -65,11 +65,27 @@ interface Venue {
   [key: string]: unknown
 }
 
+interface MspCustomer {
+  tenant_id: string
+  name: string
+  city?: string
+  state?: string
+  country?: string
+  phone_number?: string
+  service_effective_date?: string
+  service_expiration_date?: string
+  is_active?: string
+  tenant_type?: string
+  tier?: string
+  [key: string]: unknown
+}
+
 interface AssetDataState {
   accessPoints?: AccessPoint[]
   wlans?: WLAN[]
   apGroups?: APGroup[]
   venues?: Venue[]
+  mspCustomers?: MspCustomer[]
   loading: boolean
   error?: string
   success?: string
@@ -289,6 +305,27 @@ export function AssetViewer() {
     }
   }
 
+  const pullMspCustomers = async () => {
+    setState(prev => ({ ...prev, loading: true, error: undefined, success: undefined }))
+    try {
+      const data = watch()
+      
+      console.log('MSP Customers API path: /mspCustomers')
+      
+      const response = await apiGet(
+        data.r1Type,
+        { tenantId: data.tenantId, clientId: data.clientId, clientSecret: data.clientSecret, region: data.region },
+        '/mspCustomers',
+        data.r1Type === 'msp' && data.mspId ? { mspId: data.mspId } : undefined
+      )
+      
+      const mspCustomers = Array.isArray(response) ? response : (response as { data?: MspCustomer[] }).data || []
+      setState(prev => ({ ...prev, loading: false, mspCustomers, success: `Successfully pulled ${mspCustomers.length} End Customers` }))
+    } catch (err) {
+      setState(prev => ({ ...prev, loading: false, error: `Failed to pull MSP customers: ${err instanceof Error ? err.message : 'Unknown error'}` }))
+    }
+  }
+
   const copyToClipboard = (data: unknown) => navigator.clipboard.writeText(JSON.stringify(data, null, 2))
 
   const downloadJson = (data: unknown, name: string) => {
@@ -444,6 +481,59 @@ export function AssetViewer() {
         <div className="card">
           <div className="card-header"><h2 className="card-title">Pull Assets</h2></div>
           <div className="space-y-6">
+            {/* MSP Customers Section - Only show when MSP mode is selected */}
+            {watch('r1Type') === 'msp' && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <Users className="w-5 h-5 text-purple-600" />
+                  <h3 className="text-lg font-semibold text-gray-900">End Customers</h3>
+                </div>
+                <div className="bg-purple-50 border border-purple-200 rounded-md p-3 mb-2">
+                  <div className="flex items-center gap-2 text-purple-700">
+                    <AlertCircle className="w-4 h-4" />
+                    <span className="text-sm font-medium">MSP Feature:</span>
+                    <span className="text-sm">View all End Customers (ECs) managed by this MSP account.</span>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={pullMspCustomers} disabled={state.loading || !isAPsAndWLANsValid} className={`btn flex-1 ${state.loading ? 'btn-copy' : isAPsAndWLANsValid ? 'btn-download' : 'btn-secondary'}`}>
+                    <RefreshCw className={`w-4 h-4 ${state.loading ? 'animate-spin' : ''}`} />
+                    <span>Get End Customers</span>
+                  </button>
+                  {state.mspCustomers && (
+                    <>
+                      <button onClick={() => copyToClipboard(state.mspCustomers)} className="btn btn-copy"><Copy className="w-4 h-4" /><span>Copy</span></button>
+                      <button onClick={() => downloadJson(state.mspCustomers, 'msp-customers')} className="btn btn-download"><Download className="w-4 h-4" /><span>Download</span></button>
+                    </>
+                  )}
+                </div>
+                {state.mspCustomers && (
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h4 className="font-medium text-gray-900 mb-2">End Customers ({state.mspCustomers.length})</h4>
+                    <div className="space-y-2">
+                      {state.mspCustomers.map((customer, index) => (
+                        <div key={customer.tenant_id || index} className="flex items-center justify-between p-2 bg-white rounded border">
+                          <div>
+                            <div className="font-medium">{String(customer.name || '')}</div>
+                            <div className="text-sm text-gray-600">
+                              {customer.city && `${String(customer.city)}, `}{customer.state && `${String(customer.state)} `}{customer.country && String(customer.country)}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              Type: {String(customer.tenant_type || 'N/A')} • Status: {String(customer.is_active || 'N/A')}
+                              {customer.phone_number && ` • Phone: ${String(customer.phone_number)}`}
+                            </div>
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            ID: {String(customer.tenant_id || '').substring(0, 8)}...
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <Server className="w-5 h-5 text-orange-600" />
