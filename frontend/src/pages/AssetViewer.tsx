@@ -289,6 +289,8 @@ export function AssetViewer() {
       const data = watch()
       
       console.log('Venues API path: /venues')
+      console.log('MSP mode:', data.r1Type === 'msp')
+      console.log('Target tenant ID:', data.targetTenantId)
       
       const response = await apiGet(
         data.r1Type,

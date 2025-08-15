@@ -182,6 +182,14 @@ export async function apiGet(
   // For MSP mode, use target tenant ID in header for customer-specific operations
   const tenantIdForHeader = r1Type === 'msp' && targetTenantId ? targetTenantId : creds.tenantId
   
+  console.log('API call debug:', {
+    r1Type,
+    resourcePath,
+    targetTenantId,
+    tenantIdForHeader,
+    willIncludeHeader: r1Type === 'msp' && !resourcePath.startsWith('/mspCustomers')
+  })
+  
   const res = await apiFetch(region, path, {
     headers: {
       Authorization: `Bearer ${token}`,
