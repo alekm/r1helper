@@ -192,9 +192,7 @@ export async function apiGet(
     ...(r1Type === 'msp' && msp?.mspId && !resourcePath.startsWith('/mspCustomers') ? { 'X-MSP-ID': msp.mspId } : {}),
     Accept: '*/*',
   }
-  
-  
-  
+
   const res = await apiFetch(region, path, {
     headers: finalHeaders,
   })

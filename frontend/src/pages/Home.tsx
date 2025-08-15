@@ -10,8 +10,10 @@ export function Home() {
     "Upload APs directly to Ruckus One via API",
     "List and inspect WLANs/Networks with security and VLANs",
     "Venue ID support for AP Groups management",
-    "Regular R1 and MSP-aware tenant routing",
-    "OAuth2 client-credentials with token caching"
+    "Regular R1 and MSP R1 mode with target tenant delegation",
+    "OAuth2 client-credentials with token caching",
+    "MSP End Customer management and selection",
+    "Target tenant routing for MSP operations"
   ]
 
   return (

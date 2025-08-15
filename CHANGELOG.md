@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Support for multiple Ruckus One regions (NA, EU, Asia)
   - OAuth2 client credentials authentication
   - Token caching and management
+  - MSP R1 mode support with target tenant delegation
 
 - **Multi-Region Support**
   - North America: `https://api.ruckus.cloud`
@@ -50,6 +51,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Optional venue ID for APs and WLANs queries
     - Dynamic API path construction based on venue ID
     - Maintains backward compatibility with tenant-level queries
+  - **MSP R1 Mode Support**
+    - Full MSP mode with target tenant delegation
+    - End Customer management and selection
+    - Target tenant routing for all API operations
+    - Proper header management for MSP operations (`x-rks-tenantid`)
+    - Click-to-select functionality for End Customers and Venues
 
 - **Privacy-Focused Architecture**
   - Client-side CSV processing

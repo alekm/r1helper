@@ -192,6 +192,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
               </li>
               <li className="flex items-start space-x-2">
                 <div className="w-2 h-2 bg-primary-600 rounded-full mt-2 flex-shrink-0"></div>
+                <span><strong>MSP R1 Support:</strong> Full MSP mode with target tenant delegation and End Customer management</span>
+              </li>
+              <li className="flex items-start space-x-2">
+                <div className="w-2 h-2 bg-primary-600 rounded-full mt-2 flex-shrink-0"></div>
                 <span><strong>Interactive Features:</strong> Click-to-copy functionality with visual feedback</span>
               </li>
               <li className="flex items-start space-x-2">
