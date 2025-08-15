@@ -648,7 +648,13 @@ export function AssetViewer() {
                     {state.venues.map((venue, index) => (
                       <div key={venue.id || index} className="flex items-center justify-between p-2 bg-white rounded border">
                         <div>
-                          <div className="font-medium">{String(venue.name || '')}</div>
+                          <div 
+                            className="font-medium cursor-pointer hover:text-blue-600 transition-colors"
+                            onClick={() => navigator.clipboard.writeText(String(venue.id || ''))}
+                            title="Click to copy venue ID"
+                          >
+                            {String(venue.name || '')}
+                          </div>
                         </div>
                         <div className="text-xs text-gray-500">
                           ID: {String(venue.id || '').substring(0, 8)}...
