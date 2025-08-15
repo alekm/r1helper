@@ -221,7 +221,7 @@ export function AssetViewer() {
       // Get the list of AP Group IDs for the specific venue
       const basePath = `/venues/${data.venueId}/apGroups`
       
-      console.log('AP Groups base path:', basePath)
+
       
       // First, get the list of AP Group IDs
       const groupIdsResponse = await apiGet(
@@ -233,8 +233,7 @@ export function AssetViewer() {
       
       const groupIds = Array.isArray(groupIdsResponse) ? groupIdsResponse : (groupIdsResponse as { data?: string[] }).data || []
       
-      console.log('AP Groups response:', groupIdsResponse)
-      console.log('Extracted group IDs:', groupIds)
+
       
       if (groupIds.length === 0) {
         setState(prev => ({ ...prev, loading: false, apGroups: [], success: 'No AP Groups found for this venue' }))
@@ -253,7 +252,7 @@ export function AssetViewer() {
           // Get AP Group details for the specific venue
           const detailPath = `/venues/${data.venueId}/apGroups/${groupIdString}`
           
-          console.log('Fetching AP Group details for ID:', groupIdString, 'Path:', detailPath)
+
           
           const groupResponse = await apiGet(
             data.r1Type,
@@ -288,10 +287,7 @@ export function AssetViewer() {
     try {
       const data = watch()
       
-      console.log('Venues API path: /venues')
-      console.log('MSP mode:', data.r1Type === 'msp')
-      console.log('Target tenant ID:', data.targetTenantId)
-      console.log('MSP tenant ID:', data.tenantId)
+
       
       const response = await apiGet(
         data.r1Type,
@@ -301,10 +297,7 @@ export function AssetViewer() {
         data.r1Type === 'msp' ? data.targetTenantId : undefined
       )
       
-      console.log('Venues API response:', response)
-      
       const venues = Array.isArray(response) ? response : (response as { data?: Venue[] }).data || []
-      console.log('Processed venues:', venues)
       setState(prev => ({ ...prev, loading: false, venues, success: `Successfully pulled ${venues.length} Venues` }))
     } catch (err) {
       setState(prev => ({ ...prev, loading: false, error: `Failed to pull venues: ${err instanceof Error ? err.message : 'Unknown error'}` }))
@@ -316,7 +309,7 @@ export function AssetViewer() {
     try {
       const data = watch()
       
-      console.log('MSP Customers API path: /mspCustomers')
+
       
       const response = await apiGet(
         data.r1Type,
