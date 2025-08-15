@@ -649,8 +649,21 @@ export function AssetViewer() {
                       <div key={venue.id || index} className="flex items-center justify-between p-2 bg-white rounded border">
                         <div>
                           <div 
-                            className="font-medium cursor-pointer hover:text-blue-600 transition-colors"
-                            onClick={() => navigator.clipboard.writeText(String(venue.id || ''))}
+                            className="font-medium cursor-pointer hover:text-blue-600 hover:underline transition-colors text-blue-700"
+                            onClick={() => {
+                              navigator.clipboard.writeText(String(venue.id || ''));
+                              // Show brief visual feedback
+                              const element = event?.target as HTMLElement;
+                              if (element) {
+                                const originalText = element.textContent;
+                                element.textContent = 'Copied!';
+                                element.classList.add('text-green-600');
+                                setTimeout(() => {
+                                  element.textContent = originalText;
+                                  element.classList.remove('text-green-600');
+                                }, 1000);
+                              }
+                            }}
                             title="Click to copy venue ID"
                           >
                             {String(venue.name || '')}
