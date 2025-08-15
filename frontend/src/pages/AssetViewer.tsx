@@ -157,6 +157,9 @@ export function AssetViewer() {
       
       const groupIds = Array.isArray(groupIdsResponse) ? groupIdsResponse : (groupIdsResponse as { data?: string[] }).data || []
       
+      console.log('AP Groups response:', groupIdsResponse)
+      console.log('Extracted group IDs:', groupIds)
+      
       if (groupIds.length === 0) {
         setState(prev => ({ ...prev, loading: false, apGroups: [] }))
         return
@@ -166,17 +169,24 @@ export function AssetViewer() {
       const apGroups: APGroup[] = []
       for (const groupId of groupIds) {
         try {
+          // Ensure groupId is a string
+          const groupIdString = typeof groupId === 'string' ? groupId : 
+                               typeof groupId === 'object' && groupId !== null ? String(groupId.id || groupId) : 
+                               String(groupId)
+          
+          console.log('Fetching AP Group details for ID:', groupIdString)
+          
           const groupResponse = await apiGet(
             data.r1Type,
             { tenantId: data.tenantId, clientId: data.clientId, clientSecret: data.clientSecret, region: data.region },
-            `/venues/${data.venueId}/apGroups/${groupId}`,
+            `/venues/${data.venueId}/apGroups/${groupIdString}`,
             data.r1Type === 'msp' && data.mspId ? { mspId: data.mspId } : undefined
           )
           
           const groupData = Array.isArray(groupResponse) ? groupResponse[0] : groupResponse
           if (groupData && typeof groupData === 'object') {
             apGroups.push({
-              id: String(groupData.id || groupId),
+              id: String(groupData.id || groupIdString),
               name: String(groupData.name || ''),
               description: String(groupData.description || ''),
               isDefault: Boolean(groupData.isDefault)
