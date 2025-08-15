@@ -57,10 +57,17 @@ interface APGroup {
   [key: string]: unknown
 }
 
+interface Venue {
+  id: string
+  name: string
+  [key: string]: unknown
+}
+
 interface AssetDataState {
   accessPoints?: AccessPoint[]
   wlans?: WLAN[]
   apGroups?: APGroup[]
+  venues?: Venue[]
   loading: boolean
   error?: string
 }
@@ -236,6 +243,27 @@ export function AssetViewer() {
       setState(prev => ({ ...prev, loading: false, apGroups }))
     } catch (err) {
       setState(prev => ({ ...prev, loading: false, error: `Failed to pull AP Groups: ${err instanceof Error ? err.message : 'Unknown error'}` }))
+    }
+  }
+
+  const pullVenues = async () => {
+    setState(prev => ({ ...prev, loading: true }))
+    try {
+      const data = watch()
+      
+      console.log('Venues API path: /venues')
+      
+      const response = await apiGet(
+        data.r1Type,
+        { tenantId: data.tenantId, clientId: data.clientId, clientSecret: data.clientSecret, region: data.region },
+        '/venues',
+        data.r1Type === 'msp' && data.mspId ? { mspId: data.mspId } : undefined
+      )
+      
+      const venues = Array.isArray(response) ? response : (response as { data?: Venue[] }).data || []
+      setState(prev => ({ ...prev, loading: false, venues }))
+    } catch (err) {
+      setState(prev => ({ ...prev, loading: false, error: `Failed to pull venues: ${err instanceof Error ? err.message : 'Unknown error'}` }))
     }
   }
 
@@ -588,6 +616,42 @@ export function AssetViewer() {
                           <div className="text-xs text-gray-500">
                             ID: {String(group.id || '').substring(0, 8)}...
                           </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Server className="w-5 h-5 text-orange-600" />
+                <h3 className="text-lg font-semibold text-gray-900">Venues</h3>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={pullVenues} disabled={state.loading || !isAPsAndWLANsValid} className={`btn flex-1 ${state.loading ? 'btn-copy' : isAPsAndWLANsValid ? 'btn-download' : 'btn-secondary'}`}>
+                  <RefreshCw className={`w-4 h-4 ${state.loading ? 'animate-spin' : ''}`} />
+                  <span>Get Venues</span>
+                </button>
+                {state.venues && (
+                  <>
+                    <button onClick={() => copyToClipboard(state.venues)} className="btn btn-copy"><Copy className="w-4 h-4" /><span>Copy</span></button>
+                    <button onClick={() => downloadJson(state.venues, 'venues')} className="btn btn-download"><Download className="w-4 h-4" /><span>Download</span></button>
+                  </>
+                )}
+              </div>
+              {state.venues && (
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-gray-900 mb-2">Venues ({state.venues.length})</h4>
+                  <div className="space-y-2">
+                    {state.venues.map((venue, index) => (
+                      <div key={venue.id || index} className="flex items-center justify-between p-2 bg-white rounded border">
+                        <div>
+                          <div className="font-medium">{String(venue.name || '')}</div>
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          ID: {String(venue.id || '').substring(0, 8)}...
                         </div>
                       </div>
                     ))}
