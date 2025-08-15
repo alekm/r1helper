@@ -142,8 +142,8 @@ export async function getAccessToken(creds: RuckusCredentials): Promise<string> 
 }
 
 export function buildUrl(_r1Type: R1Type, tenantId: string, resourcePath: string): string {
-  // Some resources are tenant-global and exposed at root (e.g., /venues/*, /networks)
-  if (resourcePath.startsWith('/venues') || resourcePath.startsWith('/networks')) {
+  // Some resources are tenant-global and exposed at root (e.g., /venues/*, /networks, /mspCustomers)
+  if (resourcePath.startsWith('/venues') || resourcePath.startsWith('/networks') || resourcePath.startsWith('/mspCustomers')) {
     return resourcePath
   }
   const tenantPath = `/tenants/${tenantId}`
