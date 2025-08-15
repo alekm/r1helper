@@ -4,9 +4,12 @@ import { Settings, CheckCircle, Sparkles, Zap, Server, FileText, Upload } from '
 export function Home() {
   const features = [
     "Convert SmartZone AP exports to Ruckus One format",
-    "View live inventory of Access Points (APs)",
+    "View live inventory of Access Points (APs) with search & pagination",
+    "Manage AP Groups with detailed information and status",
+    "Browse Venues with click-to-copy functionality",
     "Upload APs directly to Ruckus One via API",
     "List and inspect WLANs/Networks with security and VLANs",
+    "Venue-level API support for granular data access",
     "Regular R1 and MSP-aware tenant routing",
     "OAuth2 client-credentials with token caching"
   ]
@@ -66,7 +69,7 @@ export function Home() {
               </div>
               <h3 className="text-xl font-semibold text-gray-900">Asset Viewer</h3>
             </div>
-            <p className="text-gray-600 leading-relaxed mb-4">View Access Points and WLANs across your tenant with detailed information.</p>
+            <p className="text-gray-600 leading-relaxed mb-4">View Access Points, WLANs, AP Groups, and Venues with search, pagination, and interactive features.</p>
             <div className="flex items-center space-x-2 text-blue-600 font-medium">
               <Zap className="w-4 h-4" />
               <span>Real-time data</span>

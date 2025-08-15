@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.9b] - 2025-08-14
+## [1.0.0] - 2025-08-14
 
 ### Added
 - **SmartZone to Ruckus One CSV Converter**
@@ -34,22 +34,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Asia: \`https://api.asia.ruckus.cloud\`
   - Automatic region selection in UI
 
+- **Asset Viewer with Advanced Features**
+  - Browse Ruckus One APs, WLANs, and AP Groups
+  - Real-time API integration with venue-level support
+  - Multi-region support
+  - **AP Groups Management**
+    - Two-step API process for detailed AP Group information
+    - Display AP Group name, description, and default status
+    - Copy and download functionality for AP Group data
+  - **Venues Management**
+    - Get all venues in tenant with \`/venues\` endpoint
+    - Click-to-copy venue IDs for easy reference
+    - Visual feedback for copy actions
+    - Copy and download functionality for venues data
+  - **Enhanced AP Display**
+    - Search functionality for large AP datasets
+    - Pagination controls for better performance
+    - List and Grid view modes
+    - Improved display for datasets with 600+ Access Points
+  - **Venue-Level API Support**
+    - Optional venue ID for APs and WLANs queries
+    - Dynamic API path construction based on venue ID
+    - Maintains backward compatibility with tenant-level queries
+
 - **Privacy-Focused Architecture**
   - Client-side CSV processing
   - No data storage on servers
   - Minimal API proxy for CORS handling
   - Netlify Functions for production deployment
 
-- **Asset Viewer**
-  - Browse Ruckus One APs and WLANs
-  - Real-time API integration
-  - Multi-region support
-
 - **Modern UI/UX**
   - React 18 with TypeScript
   - Tailwind CSS styling
   - Responsive design
   - Intuitive navigation
+  - **Enhanced Navigation**
+    - Improved spacing between nav items and logo
+    - Better visual separation for cleaner appearance
+  - **Interactive Elements**
+    - Click-to-copy functionality with visual feedback
+    - Hover effects and transitions
+    - Loading states and error handling
+
+### Changed
+- **Code Quality Improvements**
+  - Comprehensive ESLint cleanup
+  - TypeScript type safety enhancements
+  - Removed unused variables and parameters
+  - Fixed unnecessary escape characters
+  - Improved error handling throughout application
+- **UI/UX Enhancements**
+  - Better visual feedback for user interactions
+  - Improved spacing and layout consistency
+  - Enhanced accessibility with proper tooltips
+  - Cleaner navigation bar design
 
 ### Technical Features
 - **Development Environment**
@@ -76,6 +114,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Netlify deployment guide
 - API integration documentation
 - Privacy and security documentation
+- Embedded changelog in About page
+
+## [0.9b] - 2025-08-14
+
+### Added
+- Initial release with core CSV conversion functionality
+- Basic API integration framework
+- Multi-region support foundation
+- Asset viewer with basic AP and WLAN browsing
+
+### Technical Features
+- React 18 with TypeScript setup
+- Tailwind CSS styling
+- Vite development environment
+- Netlify deployment configuration
 
 ## [Unreleased]
 
@@ -84,12 +137,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Batch processing improvements
 - Enhanced error handling
 - Performance optimizations
-- Additional Ruckus One API endpoints`
+- Additional Ruckus One API endpoints
+- Advanced filtering and search capabilities
+- Bulk operations for AP management`
 
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">About R1Helper v0.9b</h1>
+        <h1 className="text-3xl font-bold text-gray-900">About R1Helper v1.0.0</h1>
         <p className="text-gray-600 mt-2">
           Simplifying SmartZone to Ruckus One migration for network administrators everywhere.
         </p>
@@ -125,11 +180,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
               </li>
               <li className="flex items-start space-x-2">
                 <div className="w-2 h-2 bg-primary-600 rounded-full mt-2 flex-shrink-0"></div>
-                <span><strong>Asset Viewer:</strong> View and manage Ruckus One Access Points and WLANs</span>
+                <span><strong>Advanced Asset Viewer:</strong> View and manage APs, WLANs, AP Groups, and Venues with search and pagination</span>
               </li>
               <li className="flex items-start space-x-2">
                 <div className="w-2 h-2 bg-primary-600 rounded-full mt-2 flex-shrink-0"></div>
                 <span><strong>Direct API Upload:</strong> Upload converted APs directly to Ruckus One via API</span>
+              </li>
+              <li className="flex items-start space-x-2">
+                <div className="w-2 h-2 bg-primary-600 rounded-full mt-2 flex-shrink-0"></div>
+                <span><strong>Venue-Level Management:</strong> Optional venue ID support for granular data access</span>
+              </li>
+              <li className="flex items-start space-x-2">
+                <div className="w-2 h-2 bg-primary-600 rounded-full mt-2 flex-shrink-0"></div>
+                <span><strong>Interactive Features:</strong> Click-to-copy functionality with visual feedback</span>
               </li>
               <li className="flex items-start space-x-2">
                 <div className="w-2 h-2 bg-primary-600 rounded-full mt-2 flex-shrink-0"></div>
@@ -189,10 +252,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
               </p>
               
               <ol className="list-decimal list-inside space-y-2 text-gray-700">
-                <li>Use the Asset Viewer to explore your Ruckus One infrastructure</li>
+                <li>Use the Asset Viewer to explore your Ruckus One infrastructure (APs, WLANs, AP Groups, Venues)</li>
                 <li>Convert SmartZone exports using the SZ to R1 Converter</li>
                 <li>Upload converted APs directly to Ruckus One via API</li>
-                <li>Manage and monitor your network assets efficiently</li>
+                <li>Manage and monitor your network assets efficiently with search and pagination</li>
+                <li>Use venue-level queries for granular data access when needed</li>
               </ol>
               
               <p className="text-sm text-gray-600">
