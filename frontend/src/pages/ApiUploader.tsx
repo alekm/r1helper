@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { Upload, ArrowLeft, CheckCircle, AlertCircle, FileText } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { getAccessToken, buildUrl } from '../lib/ruckusApi'
+import { getAccessToken, buildUrl, apiGet } from '../lib/ruckusApi'
+import { apiFetch } from '../lib/apiClient'
 
 interface CsvData {
   headers: string[]
@@ -57,8 +58,9 @@ export function ApiUploader() {
       setState(prev => ({ ...prev, uploadProgress: 30 }))
 
       // Get list of existing AP Groups in the venue
-      const apGroupsUrl = buildUrl(credentials.r1Type, credentials.tenantId, `/venues/${credentials.venueId}/apGroups`, credentials.region)
-      const apGroupsResponse = await fetch(apGroupsUrl, {
+      const region = credentials.region || 'na'
+      const apGroupsPath = `/venues/${credentials.venueId}/apGroups`
+      const apGroupsResponse = await apiFetch(region, apGroupsPath, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'X-Tenant-ID': credentials.tenantId,
@@ -118,9 +120,9 @@ export function ApiUploader() {
           throw new Error(`AP "${ap.name}" has no AP Group specified. All APs must have an AP Group.`)
         }
         
-        const url = buildUrl(credentials.r1Type, credentials.tenantId, `/venues/${credentials.venueId}/apGroups/${apGroupId}/aps`, credentials.region)
+        const apUploadPath = `/venues/${credentials.venueId}/apGroups/${apGroupId}/aps`
         
-        const response = await fetch(url, {
+        const response = await apiFetch(region, apUploadPath, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
