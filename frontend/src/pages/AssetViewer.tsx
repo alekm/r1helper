@@ -82,8 +82,11 @@ export function AssetViewer() {
                      formData.clientSecret?.trim() &&
                      (formData.r1Type !== 'msp' || formData.mspId?.trim())
 
-  // Check if form is valid for AP Groups (venue ID is optional)
-  const isAPGroupsValid = isFormValid
+  // Check if venue ID is filled for AP Groups
+  const isVenueValid = formData.venueId?.trim()
+
+  // Check if form is valid for AP Groups (requires venue ID)
+  const isAPGroupsValid = isFormValid && isVenueValid
 
   // token retrieval handled via lib/ruckusApi
 
@@ -143,10 +146,12 @@ export function AssetViewer() {
     setState(prev => ({ ...prev, loading: true }))
     try {
       const data = watch()
+      if (!data.venueId?.trim()) {
+        throw new Error('Venue ID is required to pull AP Groups')
+      }
       
-      // Determine the API path based on whether venue ID is provided
-      const venueId = data.venueId?.trim()
-      const basePath = venueId ? `/venues/${venueId}/apGroups` : '/apGroups'
+      // Get the list of AP Group IDs for the specific venue
+      const basePath = `/venues/${data.venueId}/apGroups`
       
       console.log('AP Groups base path:', basePath)
       
@@ -177,8 +182,8 @@ export function AssetViewer() {
                                typeof groupId === 'object' && groupId !== null ? String(groupId.id || groupId) : 
                                String(groupId)
           
-          // Determine the detail API path
-          const detailPath = venueId ? `/venues/${venueId}/apGroups/${groupIdString}` : `/apGroups/${groupIdString}`
+          // Get AP Group details for the specific venue
+          const detailPath = `/venues/${data.venueId}/apGroups/${groupIdString}`
           
           console.log('Fetching AP Group details for ID:', groupIdString, 'Path:', detailPath)
           
@@ -316,7 +321,7 @@ export function AssetViewer() {
             <div>
               <label className="form-label">Venue ID (for AP Groups)</label>
               <input type="text" {...register('venueId')} className="form-input" placeholder="venue-id" />
-              <p className="text-sm text-gray-600 mt-1">Optional: Leave blank to get AP Groups for the entire tenant, or enter a venue ID for venue-specific groups</p>
+              <p className="text-sm text-gray-600 mt-1">Required to pull AP Groups from a specific venue</p>
             </div>
             <button type="button" onClick={testConnection} disabled={state.loading || !isFormValid} className={`btn w-full ${state.loading ? 'btn-copy' : isFormValid ? 'btn-download' : 'btn-secondary'}`}>
               <Server className="w-4 h-4" />
@@ -428,7 +433,7 @@ export function AssetViewer() {
                 <h3 className="text-lg font-semibold text-gray-900">AP Groups</h3>
               </div>
               <div className="flex gap-2">
-                <button onClick={pullAPGroups} disabled={state.loading || !isAPGroupsValid} className={`btn flex-1 ${state.loading ? 'btn-copy' : (isAPGroupsValid) ? 'btn-download' : 'btn-secondary'}`}>
+                <button onClick={pullAPGroups} disabled={state.loading || !isAPGroupsValid} className={`btn flex-1 ${state.loading ? 'btn-copy' : isAPGroupsValid ? 'btn-download' : 'btn-secondary'}`}>
                   <RefreshCw className={`w-4 h-4 ${state.loading ? 'animate-spin' : ''}`} />
                   <span>Get AP Groups</span>
                 </button>
