@@ -289,6 +289,9 @@ export function AssetViewer() {
       const data = watch()
       
       console.log('Venues API path: /venues')
+      console.log('MSP mode:', data.r1Type === 'msp')
+      console.log('Target tenant ID:', data.targetTenantId)
+      console.log('MSP tenant ID:', data.tenantId)
       
       const response = await apiGet(
         data.r1Type,
@@ -298,7 +301,10 @@ export function AssetViewer() {
         data.r1Type === 'msp' ? data.targetTenantId : undefined
       )
       
+      console.log('Venues API response:', response)
+      
       const venues = Array.isArray(response) ? response : (response as { data?: Venue[] }).data || []
+      console.log('Processed venues:', venues)
       setState(prev => ({ ...prev, loading: false, venues, success: `Successfully pulled ${venues.length} Venues` }))
     } catch (err) {
       setState(prev => ({ ...prev, loading: false, error: `Failed to pull venues: ${err instanceof Error ? err.message : 'Unknown error'}` }))

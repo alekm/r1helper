@@ -182,6 +182,19 @@ export async function apiGet(
   // For MSP mode, use target tenant ID in header for customer-specific operations
   const tenantIdForHeader = r1Type === 'msp' && targetTenantId ? targetTenantId : creds.tenantId
   
+  console.log('API call details:', {
+    r1Type,
+    resourcePath,
+    targetTenantId,
+    tenantIdForHeader,
+    willIncludeHeader: r1Type === 'msp' && !resourcePath.startsWith('/mspCustomers'),
+    finalHeaders: {
+      Authorization: `Bearer ${token.substring(0, 20)}...`,
+      ...(r1Type === 'msp' && !resourcePath.startsWith('/mspCustomers') ? { 'x-rks-tenantid': tenantIdForHeader } : {}),
+      Accept: 'application/json',
+    }
+  })
+  
   const res = await apiFetch(region, path, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -199,7 +212,10 @@ export async function apiGet(
     }
     throw new Error(`API request failed: ${res.status} ${res.statusText}${detail ? ` - ${detail}` : ''}`)
   }
-  return res.json()
+  
+  const responseData = await res.json()
+  console.log('API response data:', responseData)
+  return responseData
 }
 
 export const RuckusEndpoints = {
