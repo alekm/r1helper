@@ -5,7 +5,7 @@ export interface FormCredentials {
   clientId: string
   clientSecret: string
   r1Type: 'regular' | 'msp'
-  mspId: string
+  mspId?: string
   venueId: string
   region: 'na' | 'eu' | 'asia'
 }

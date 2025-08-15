@@ -10,7 +10,6 @@ interface AssetViewerData {
   tenantId: string
   clientId: string
   clientSecret: string
-  mspId?: string
   region?: 'na' | 'eu' | 'asia'
   venueId?: string
 }
@@ -66,18 +65,8 @@ interface Venue {
 }
 
 interface MspCustomer {
-  msp_label?: string
   name: string
   tenant_id: string
-  tenant_type?: string
-  tier?: string
-  is_active?: string
-  service_effective_date?: string
-  service_expiration_date?: string
-  city?: string
-  country?: string
-  street_address?: string
-  account_id?: string
   [key: string]: unknown
 }
 
@@ -117,17 +106,15 @@ export function AssetViewer() {
       clientId: formData.clientId || '',
       clientSecret: formData.clientSecret || '',
       r1Type: formData.r1Type || 'regular',
-      mspId: formData.mspId || '',
       venueId: formData.venueId || '',
       region: formData.region || 'na'
     })
-  }, [formData.tenantId, formData.clientId, formData.clientSecret, formData.r1Type, formData.mspId, formData.venueId, formData.region])
+  }, [formData.tenantId, formData.clientId, formData.clientSecret, formData.r1Type, formData.venueId, formData.region])
 
   // Check if all required fields are filled
   const isFormValid = formData.tenantId?.trim() && 
                      formData.clientId?.trim() && 
-                     formData.clientSecret?.trim() &&
-                     (formData.r1Type !== 'msp' || formData.mspId?.trim())
+                     formData.clientSecret?.trim()
 
   // Check if venue ID is filled for AP Groups
   const isVenueValid = formData.venueId?.trim()
@@ -153,7 +140,6 @@ export function AssetViewer() {
     setValue('clientId', '')
     setValue('clientSecret', '')
     setValue('r1Type', 'regular')
-    setValue('mspId', '')
     setValue('venueId', '')
     setValue('region', 'na')
     setState(prev => ({ ...prev, error: undefined, success: undefined }))
@@ -171,7 +157,7 @@ export function AssetViewer() {
         data.r1Type,
         { tenantId: data.tenantId, clientId: data.clientId, clientSecret: data.clientSecret, region: data.region },
         testPath,
-        data.r1Type === 'msp' && data.mspId ? { mspId: data.mspId } : undefined
+        undefined
       )
       setState({ loading: false, success: 'Connection successful! Your credentials are valid.' })
     } catch (err) {
@@ -190,7 +176,7 @@ export function AssetViewer() {
         data.r1Type,
         { tenantId: data.tenantId, clientId: data.clientId, clientSecret: data.clientSecret, region: data.region },
         '/venues/aps',
-        data.r1Type === 'msp' && data.mspId ? { mspId: data.mspId } : undefined
+        undefined
       )
       const accessPoints = Array.isArray(response) ? response : (response as { data?: AccessPoint[] }).data || []
       setState(prev => ({ ...prev, loading: false, accessPoints, success: `Successfully pulled ${accessPoints.length} Access Points` }))
@@ -211,7 +197,7 @@ export function AssetViewer() {
         data.r1Type,
         { tenantId: data.tenantId, clientId: data.clientId, clientSecret: data.clientSecret, region: data.region },
         '/networks',
-        data.r1Type === 'msp' && data.mspId ? { mspId: data.mspId } : undefined
+        undefined
       )
       const wifiNetworks = Array.isArray(response) ? response : (response as { data?: WLAN[] }).data || []
       setState(prev => ({ ...prev, loading: false, wlans: wifiNetworks, success: `Successfully pulled ${wifiNetworks.length} WLANs` }))
@@ -238,7 +224,7 @@ export function AssetViewer() {
         data.r1Type,
         { tenantId: data.tenantId, clientId: data.clientId, clientSecret: data.clientSecret, region: data.region },
         basePath,
-        data.r1Type === 'msp' && data.mspId ? { mspId: data.mspId } : undefined
+        undefined
       )
       
       const groupIds = Array.isArray(groupIdsResponse) ? groupIdsResponse : (groupIdsResponse as { data?: string[] }).data || []
@@ -269,7 +255,7 @@ export function AssetViewer() {
             data.r1Type,
             { tenantId: data.tenantId, clientId: data.clientId, clientSecret: data.clientSecret, region: data.region },
             detailPath,
-            data.r1Type === 'msp' && data.mspId ? { mspId: data.mspId } : undefined
+            undefined
           )
           
           const groupData = Array.isArray(groupResponse) ? groupResponse[0] : groupResponse
@@ -304,7 +290,7 @@ export function AssetViewer() {
         data.r1Type,
         { tenantId: data.tenantId, clientId: data.clientId, clientSecret: data.clientSecret, region: data.region },
         '/venues',
-        data.r1Type === 'msp' && data.mspId ? { mspId: data.mspId } : undefined
+        undefined
       )
       
       const venues = Array.isArray(response) ? response : (response as { data?: Venue[] }).data || []
@@ -454,13 +440,7 @@ export function AssetViewer() {
                 {errors.clientSecret && (<p className="text-red-600 text-sm mt-1">{errors.clientSecret.message}</p>)}
               </div>
             </div>
-            {watch('r1Type') === 'msp' && (
-              <div>
-                <label className="form-label">MSP ID</label>
-                <input type="text" {...register('mspId', { required: 'MSP ID is required for MSP mode' })} className="form-input" placeholder="your-msp-id" />
-                {errors.mspId && (<p className="text-red-600 text-sm mt-1">{errors.mspId.message}</p>)}
-              </div>
-            )}
+
                                       <div>
                             <label className="form-label">Venue ID (for AP Groups)</label>
                             <input type="text" {...register('venueId')} className="form-input" placeholder="venue-id" />
@@ -544,12 +524,7 @@ export function AssetViewer() {
                             >
                               {String(customer.name || '')}
                             </div>
-                            <div className="text-sm text-gray-600">
-                              {customer.city && `${String(customer.city)}, `}{customer.country && String(customer.country)}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              Type: {String(customer.tenant_type || 'N/A')} • Status: {String(customer.is_active || 'N/A')} • Tier: {String(customer.tier || 'N/A')}
-                            </div>
+
                           </div>
                           <div className="text-xs text-gray-500">
                             ID: {String(customer.tenant_id || '').substring(0, 8)}...
