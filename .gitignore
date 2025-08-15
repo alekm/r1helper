@@ -134,3 +134,6 @@ temp/
 
 # Local development
 *.local
+
+# Ruckus One API schemas
+R1API/

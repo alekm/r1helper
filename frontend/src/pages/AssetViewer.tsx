@@ -449,6 +449,13 @@ export function AssetViewer() {
                 <Server className="w-5 h-5 text-orange-600" />
                 <h3 className="text-lg font-semibold text-gray-900">Venues</h3>
               </div>
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-2">
+                <div className="flex items-center gap-2 text-blue-700">
+                  <AlertCircle className="w-4 h-4" />
+                  <span className="text-sm font-medium">Tip:</span>
+                  <span className="text-sm">Click on any venue name below to automatically fill the Venue ID field above.</span>
+                </div>
+              </div>
               <div className="flex gap-2">
                 <button onClick={pullVenues} disabled={state.loading || !isAPsAndWLANsValid} className={`btn flex-1 ${state.loading ? 'btn-copy' : isAPsAndWLANsValid ? 'btn-download' : 'btn-secondary'}`}>
                   <RefreshCw className={`w-4 h-4 ${state.loading ? 'animate-spin' : ''}`} />
