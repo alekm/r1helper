@@ -94,6 +94,9 @@ export function AssetViewer() {
   // Check if form is valid for AP Groups (requires venue ID)
   const isAPGroupsValid = isFormValid && isVenueValid
 
+  // Check if form is valid for APs and WLANs (venue ID is optional)
+  const isAPsAndWLANsValid = isFormValid
+
   // token retrieval handled via lib/ruckusApi
 
   const testConnection = async () => {
@@ -118,10 +121,17 @@ export function AssetViewer() {
     setState(prev => ({ ...prev, loading: true }))
     try {
       const data = watch()
+      
+      // Determine the API path based on whether venue ID is provided
+      const venueId = data.venueId?.trim()
+      const apiPath = venueId ? `/venues/${venueId}/aps` : '/venues/aps'
+      
+      console.log('APs API path:', apiPath)
+      
       const response = await apiGet(
         data.r1Type,
         { tenantId: data.tenantId, clientId: data.clientId, clientSecret: data.clientSecret, region: data.region },
-        '/venues/aps',
+        apiPath,
         data.r1Type === 'msp' && data.mspId ? { mspId: data.mspId } : undefined
       )
       const accessPoints = Array.isArray(response) ? response : (response as { data?: AccessPoint[] }).data || []
@@ -136,10 +146,17 @@ export function AssetViewer() {
     setState(prev => ({ ...prev, loading: true }))
     try {
       const data = watch()
+      
+      // Determine the API path based on whether venue ID is provided
+      const venueId = data.venueId?.trim()
+      const apiPath = venueId ? `/venues/${venueId}/networks` : '/networks'
+      
+      console.log('WLANs API path:', apiPath)
+      
       const response = await apiGet(
         data.r1Type,
         { tenantId: data.tenantId, clientId: data.clientId, clientSecret: data.clientSecret, region: data.region },
-        '/networks',
+        apiPath,
         data.r1Type === 'msp' && data.mspId ? { mspId: data.mspId } : undefined
       )
       const wifiNetworks = Array.isArray(response) ? response : (response as { data?: WLAN[] }).data || []
@@ -349,7 +366,7 @@ export function AssetViewer() {
             <div>
               <label className="form-label">Venue ID (for AP Groups)</label>
               <input type="text" {...register('venueId')} className="form-input" placeholder="venue-id" />
-              <p className="text-sm text-gray-600 mt-1">Required to pull AP Groups from a specific venue</p>
+              <p className="text-sm text-gray-600 mt-1">Required for AP Groups. Optional for APs and WLANs - leave blank for tenant-level or enter venue ID for venue-specific data.</p>
             </div>
             <button type="button" onClick={testConnection} disabled={state.loading || !isFormValid} className={`btn w-full ${state.loading ? 'btn-copy' : isFormValid ? 'btn-download' : 'btn-secondary'}`}>
               <Server className="w-4 h-4" />
@@ -373,7 +390,7 @@ export function AssetViewer() {
                 <h3 className="text-lg font-semibold text-gray-900">Access Points</h3>
               </div>
               <div className="flex gap-2">
-                <button onClick={pullAccessPoints} disabled={state.loading || !isFormValid} className={`btn flex-1 ${state.loading ? 'btn-copy' : isFormValid ? 'btn-download' : 'btn-secondary'}`}>
+                <button onClick={pullAccessPoints} disabled={state.loading || !isAPsAndWLANsValid} className={`btn flex-1 ${state.loading ? 'btn-copy' : isAPsAndWLANsValid ? 'btn-download' : 'btn-secondary'}`}>
                   <RefreshCw className={`w-4 h-4 ${state.loading ? 'animate-spin' : ''}`} />
                   <span>Pull APs</span>
                 </button>
@@ -486,7 +503,7 @@ export function AssetViewer() {
                 <h3 className="text-lg font-semibold text-gray-900">WLANs</h3>
               </div>
               <div className="flex gap-2">
-                <button onClick={pullWLANs} disabled={state.loading || !isFormValid} className={`btn flex-1 ${state.loading ? 'btn-copy' : isFormValid ? 'btn-download' : 'btn-secondary'}`}>
+                <button onClick={pullWLANs} disabled={state.loading || !isAPsAndWLANsValid} className={`btn flex-1 ${state.loading ? 'btn-copy' : isAPsAndWLANsValid ? 'btn-download' : 'btn-secondary'}`}>
                   <RefreshCw className={`w-4 h-4 ${state.loading ? 'animate-spin' : ''}`} />
                   <span>Pull WLANs</span>
                 </button>
