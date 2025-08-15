@@ -6,11 +6,7 @@ import { apiFetch } from '../lib/apiClient'
 import { loadCredentials } from '../lib/formStorage'
 import { saveCredentials, clearCredentials } from '../lib/formStorage'
 
-interface ApGroup {
-  id: string
-  name: string
-  [key: string]: unknown
-}
+
 
 interface ApData {
   name: string
@@ -107,7 +103,40 @@ export function ApiUploader() {
       }
 
       const apGroupsData = await apGroupsResponse.json()
-      const existingApGroups = new Set(apGroupsData.map((group: ApGroup) => group.id || group.name))
+      const groupIds = Array.isArray(apGroupsData) ? apGroupsData : (apGroupsData as { data?: string[] }).data || []
+      
+      // Fetch individual group details to get names
+      const existingApGroups = new Set<string>()
+      const groupIdToNameMap = new Map<string, string>()
+      
+      for (const groupId of groupIds) {
+        try {
+          const groupIdString = typeof groupId === 'string' ? groupId : 
+                               typeof groupId === 'object' && groupId !== null ? String(groupId.id || groupId) : 
+                               String(groupId)
+          
+          const detailPath = `/venues/${credentials.venueId}/apGroups/${groupIdString}`
+          const groupResponse = await apiFetch(region, detailPath, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'X-Tenant-ID': credentials.tenantId,
+              ...(credentials.r1Type === 'msp' && credentials.mspId ? { 'X-MSP-ID': credentials.mspId } : {})
+            }
+          })
+          
+          if (groupResponse.ok) {
+            const groupData = await groupResponse.json()
+            const groupName = String(groupData.name || '')
+            if (groupName) {
+              existingApGroups.add(groupName)
+              groupIdToNameMap.set(groupName, groupIdString)
+            }
+          }
+        } catch (groupErr) {
+          console.warn(`Failed to fetch details for AP Group ${groupId}:`, groupErr)
+          // Continue with other groups even if one fails
+        }
+      }
 
       setState(prev => ({ ...prev, uploadProgress: 40 }))
 
@@ -155,8 +184,14 @@ export function ApiUploader() {
         let uploadTarget: string
         
         if (apGroupId && apGroupId.trim() !== '') {
-          // Upload to specific AP Group
-          apUploadPath = `/venues/${credentials.venueId}/apGroups/${apGroupId}/aps`
+          // Look up the group ID from the name
+          const actualGroupId = groupIdToNameMap.get(apGroupId.trim())
+          if (!actualGroupId) {
+            throw new Error(`AP Group "${apGroupId}" not found in venue ${credentials.venueId}`)
+          }
+          
+          // Upload to specific AP Group using the actual group ID
+          apUploadPath = `/venues/${credentials.venueId}/apGroups/${actualGroupId}/aps`
           uploadTarget = `AP Group "${apGroupId}"`
         } else {
           // Upload to venue level (no AP Group)
