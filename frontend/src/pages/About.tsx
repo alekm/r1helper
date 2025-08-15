@@ -1,6 +1,91 @@
-import { ExternalLink, Github, Heart } from 'lucide-react'
+import { useState } from 'react'
+import { ExternalLink, Github, Heart, FileText, X } from 'lucide-react'
 
 export function About() {
+  const [showChangelog, setShowChangelog] = useState(false)
+
+  const changelogContent = `# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.9b] - 2025-08-14
+
+### Added
+- **SmartZone to Ruckus One CSV Converter**
+  - Convert SmartZone AP exports to Ruckus One bulk import format
+  - Comprehensive validation for AP names, serial numbers, and coordinates
+  - Support for AP Group, Latitude, and Longitude settings
+  - Duplicate detection for AP names and serial numbers
+  - CSV download with proper formatting
+
+- **Direct API Integration**
+  - Upload APs directly to Ruckus One via API
+  - Pre-upload validation for AP Groups
+  - Support for multiple Ruckus One regions (NA, EU, Asia)
+  - OAuth2 client credentials authentication
+  - Token caching and management
+
+- **Multi-Region Support**
+  - North America: \`https://api.ruckus.cloud\`
+  - Europe: \`https://api.eu.ruckus.cloud\`
+  - Asia: \`https://api.asia.ruckus.cloud\`
+  - Automatic region selection in UI
+
+- **Privacy-Focused Architecture**
+  - Client-side CSV processing
+  - No data storage on servers
+  - Minimal API proxy for CORS handling
+  - Netlify Functions for production deployment
+
+- **Asset Viewer**
+  - Browse Ruckus One APs and WLANs
+  - Real-time API integration
+  - Multi-region support
+
+- **Modern UI/UX**
+  - React 18 with TypeScript
+  - Tailwind CSS styling
+  - Responsive design
+  - Intuitive navigation
+
+### Technical Features
+- **Development Environment**
+  - Vite development server with proxy
+  - Hot module replacement
+  - TypeScript compilation
+  - ESLint and Prettier configuration
+
+- **Production Deployment**
+  - Netlify Functions for API proxying
+  - Static site generation
+  - HTTPS enforcement
+  - CORS handling
+
+### Security & Privacy
+- No sensitive data storage
+- Client-side processing
+- Minimal server exposure
+- Secure API communication
+- Token-based authentication
+
+### Documentation
+- Comprehensive README
+- Netlify deployment guide
+- API integration documentation
+- Privacy and security documentation
+
+## [Unreleased]
+
+### Planned Features
+- Additional CSV format support
+- Batch processing improvements
+- Enhanced error handling
+- Performance optimizations
+- Additional Ruckus One API endpoints`
+
   return (
     <div className="space-y-8">
       <div>
@@ -170,6 +255,13 @@ export function About() {
                   <span>View on GitHub</span>
                   <ExternalLink className="w-3 h-3" />
                 </a>
+                <button
+                  onClick={() => setShowChangelog(true)}
+                  className="flex items-center space-x-2 text-primary-600 hover:text-primary-700 transition-colors"
+                >
+                  <FileText className="w-4 h-4" />
+                  <span>View Changelog</span>
+                </button>
               </div>
             </div>
           </div>
@@ -195,6 +287,30 @@ export function About() {
           <span>for the network admin community</span>
         </p>
       </div>
+
+      {/* Changelog Modal */}
+      {showChangelog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-900">Changelog</h2>
+              <button
+                onClick={() => setShowChangelog(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+              <div className="prose prose-sm max-w-none">
+                <pre className="whitespace-pre-wrap text-sm text-gray-700 font-mono leading-relaxed">
+                  {changelogContent}
+                </pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
