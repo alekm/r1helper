@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Settings, CheckCircle, Sparkles, Zap, Server, FileText, Upload, ArrowDown } from 'lucide-react'
+import { Settings, CheckCircle, Sparkles, Zap, Server, FileText, Upload } from 'lucide-react'
 
 export function Home() {
   const features = [
@@ -29,16 +29,10 @@ export function Home() {
         <p className="hero-description">Convert SmartZone exports, manage Ruckus One assets, and upload configurations seamlessly.</p>
         
         <div className="hero-buttons">
-          <div className="flex flex-col items-center">
-            <div className="mb-2 flex items-center space-x-2 text-blue-600 font-medium">
-              <ArrowDown className="w-4 h-4" />
-              <span>Start Here</span>
-            </div>
-            <Link to="/assets" className="btn-primary">
-              <Server className="w-5 h-5" />
-              <span>Asset Viewer</span>
-            </Link>
-          </div>
+          <Link to="/assets" className="btn-primary">
+            <Server className="w-5 h-5" />
+            <span>Asset Viewer</span>
+          </Link>
           <Link to="/csv" className="btn-secondary">
             <FileText className="w-5 h-5" />
             <span>Convert SmartZone Data</span>
