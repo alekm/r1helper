@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Download, Copy, Wifi, Server, AlertCircle, RefreshCw, FolderOpen, Search, ChevronLeft, ChevronRight, Grid, List } from 'lucide-react'
+import { Download, Copy, Wifi, Server, AlertCircle, RefreshCw, FolderOpen, Search, ChevronLeft, ChevronRight, Grid, List, CheckCircle } from 'lucide-react'
 import { apiGet } from '../lib/ruckusApi'
 
 interface AssetViewerData {
@@ -70,6 +70,7 @@ interface AssetDataState {
   venues?: Venue[]
   loading: boolean
   error?: string
+  success?: string
 }
 
 export function AssetViewer() {
@@ -107,7 +108,7 @@ export function AssetViewer() {
   // token retrieval handled via lib/ruckusApi
 
   const testConnection = async () => {
-    setState({ loading: true })
+    setState({ loading: true, error: undefined, success: undefined })
     try {
       const data = watch()
       // Just attempt a token fetch to validate creds; then a lightweight call
@@ -118,14 +119,14 @@ export function AssetViewer() {
         testPath,
         data.r1Type === 'msp' && data.mspId ? { mspId: data.mspId } : undefined
       )
-      setState({ loading: false })
+      setState({ loading: false, success: 'Connection successful! Your credentials are valid.' })
     } catch (err) {
       setState({ loading: false, error: `Connection failed: ${err instanceof Error ? err.message : 'Unknown error'}` })
     }
   }
 
   const pullAccessPoints = async () => {
-    setState(prev => ({ ...prev, loading: true }))
+    setState(prev => ({ ...prev, loading: true, error: undefined, success: undefined }))
     try {
       const data = watch()
       
@@ -138,7 +139,7 @@ export function AssetViewer() {
         data.r1Type === 'msp' && data.mspId ? { mspId: data.mspId } : undefined
       )
       const accessPoints = Array.isArray(response) ? response : (response as { data?: AccessPoint[] }).data || []
-      setState(prev => ({ ...prev, loading: false, accessPoints }))
+      setState(prev => ({ ...prev, loading: false, accessPoints, success: `Successfully pulled ${accessPoints.length} Access Points` }))
       resetAPDisplay() // Reset display controls when new data is loaded
     } catch (err) {
       setState(prev => ({ ...prev, loading: false, error: `Failed to pull access points: ${err instanceof Error ? err.message : 'Unknown error'}` }))
@@ -146,7 +147,7 @@ export function AssetViewer() {
   }
 
   const pullWLANs = async () => {
-    setState(prev => ({ ...prev, loading: true }))
+    setState(prev => ({ ...prev, loading: true, error: undefined, success: undefined }))
     try {
       const data = watch()
       
@@ -163,14 +164,14 @@ export function AssetViewer() {
         data.r1Type === 'msp' && data.mspId ? { mspId: data.mspId } : undefined
       )
       const wifiNetworks = Array.isArray(response) ? response : (response as { data?: WLAN[] }).data || []
-      setState(prev => ({ ...prev, loading: false, wlans: wifiNetworks }))
+      setState(prev => ({ ...prev, loading: false, wlans: wifiNetworks, success: `Successfully pulled ${wifiNetworks.length} WLANs` }))
     } catch (err) {
       setState(prev => ({ ...prev, loading: false, error: `Failed to pull WLANs: ${err instanceof Error ? err.message : 'Unknown error'}` }))
     }
   }
 
   const pullAPGroups = async () => {
-    setState(prev => ({ ...prev, loading: true }))
+    setState(prev => ({ ...prev, loading: true, error: undefined, success: undefined }))
     try {
       const data = watch()
       if (!data.venueId?.trim()) {
@@ -196,7 +197,7 @@ export function AssetViewer() {
       console.log('Extracted group IDs:', groupIds)
       
       if (groupIds.length === 0) {
-        setState(prev => ({ ...prev, loading: false, apGroups: [] }))
+        setState(prev => ({ ...prev, loading: false, apGroups: [], success: 'No AP Groups found for this venue' }))
         return
       }
       
@@ -236,14 +237,14 @@ export function AssetViewer() {
         }
       }
       
-      setState(prev => ({ ...prev, loading: false, apGroups }))
+      setState(prev => ({ ...prev, loading: false, apGroups, success: `Successfully pulled ${apGroups.length} AP Groups` }))
     } catch (err) {
       setState(prev => ({ ...prev, loading: false, error: `Failed to pull AP Groups: ${err instanceof Error ? err.message : 'Unknown error'}` }))
     }
   }
 
   const pullVenues = async () => {
-    setState(prev => ({ ...prev, loading: true }))
+    setState(prev => ({ ...prev, loading: true, error: undefined, success: undefined }))
     try {
       const data = watch()
       
@@ -257,7 +258,7 @@ export function AssetViewer() {
       )
       
       const venues = Array.isArray(response) ? response : (response as { data?: Venue[] }).data || []
-      setState(prev => ({ ...prev, loading: false, venues }))
+      setState(prev => ({ ...prev, loading: false, venues, success: `Successfully pulled ${venues.length} Venues` }))
     } catch (err) {
       setState(prev => ({ ...prev, loading: false, error: `Failed to pull venues: ${err instanceof Error ? err.message : 'Unknown error'}` }))
     }
@@ -400,6 +401,12 @@ export function AssetViewer() {
               <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md flex items-center gap-2">
                 <AlertCircle className="w-5 h-5 text-red-600" />
                 <span className="text-red-700">{state.error}</span>
+              </div>
+            )}
+            {state.success && (
+              <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-green-600" />
+                <span className="text-green-700">{state.success}</span>
               </div>
             )}
           </form>
