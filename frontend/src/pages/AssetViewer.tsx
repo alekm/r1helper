@@ -29,6 +29,13 @@ export function AssetViewer() {
     }
   })
 
+  // Check if all required fields are filled
+  const formData = watch()
+  const isFormValid = formData.tenantId?.trim() && 
+                     formData.clientId?.trim() && 
+                     formData.clientSecret?.trim() &&
+                     (formData.r1Type !== 'msp' || formData.mspId?.trim())
+
   // token retrieval handled via lib/ruckusApi
 
   const testConnection = async () => {
@@ -184,7 +191,7 @@ export function AssetViewer() {
                 {errors.mspId && (<p className="text-red-600 text-sm mt-1">{errors.mspId.message}</p>)}
               </div>
             )}
-            <button type="button" onClick={testConnection} disabled={state.loading} className={`btn w-full ${state.loading ? 'btn-copy' : 'btn-download'}`}>
+            <button type="button" onClick={testConnection} disabled={state.loading || !isFormValid} className={`btn w-full ${state.loading ? 'btn-copy' : isFormValid ? 'btn-download' : 'btn-secondary'}`}>
               <Server className="w-4 h-4" />
               <span>{state.loading ? 'Testing...' : 'Test Connection'}</span>
             </button>
@@ -206,7 +213,7 @@ export function AssetViewer() {
                 <h3 className="text-lg font-semibold text-gray-900">Access Points</h3>
               </div>
               <div className="flex gap-2">
-                <button onClick={pullAccessPoints} disabled={state.loading} className="btn btn-download flex-1">
+                <button onClick={pullAccessPoints} disabled={state.loading || !isFormValid} className={`btn flex-1 ${state.loading ? 'btn-copy' : isFormValid ? 'btn-download' : 'btn-secondary'}`}>
                   <RefreshCw className={`w-4 h-4 ${state.loading ? 'animate-spin' : ''}`} />
                   <span>Pull APs</span>
                 </button>
@@ -243,7 +250,7 @@ export function AssetViewer() {
                 <h3 className="text-lg font-semibold text-gray-900">WLANs</h3>
               </div>
               <div className="flex gap-2">
-                <button onClick={pullWLANs} disabled={state.loading} className="btn btn-download flex-1">
+                <button onClick={pullWLANs} disabled={state.loading || !isFormValid} className={`btn flex-1 ${state.loading ? 'btn-copy' : isFormValid ? 'btn-download' : 'btn-secondary'}`}>
                   <RefreshCw className={`w-4 h-4 ${state.loading ? 'animate-spin' : ''}`} />
                   <span>Pull WLANs</span>
                 </button>
