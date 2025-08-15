@@ -165,7 +165,7 @@ export async function apiGet(
   const res = await apiFetch(region, path, {
     headers: {
       Authorization: `Bearer ${token}`,
-      'X-Tenant-ID': creds.tenantId,
+      ...(r1Type === 'msp' ? { 'x-rks-tenantid': creds.tenantId } : {}),
       ...(r1Type === 'msp' && msp?.mspId ? { 'X-MSP-ID': msp.mspId } : {}),
       Accept: 'application/json',
     },
