@@ -572,8 +572,10 @@ export function AssetViewer() {
                     {state.apGroups.map((group, index) => (
                       <div key={group.id || index} className="flex items-center justify-between p-2 bg-white rounded border">
                         <div>
-                          <div className="font-medium">{String(group.name || group.id || '')}</div>
-                          {group.description && (
+                          <div className="font-medium">
+                            {group.name && group.name.trim() ? String(group.name) : `AP Group ${String(group.id || '').substring(0, 8)}...`}
+                          </div>
+                          {group.description && group.description.trim() && (
                             <div className="text-sm text-gray-600">{String(group.description)}</div>
                           )}
                         </div>
@@ -584,7 +586,7 @@ export function AssetViewer() {
                             </span>
                           )}
                           <div className="text-xs text-gray-500">
-                            ID: {String(group.id || '')}
+                            ID: {String(group.id || '').substring(0, 8)}...
                           </div>
                         </div>
                       </div>
