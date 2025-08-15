@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Download, Copy, Wifi, Server, AlertCircle, RefreshCw, FolderOpen, Search, ChevronLeft, ChevronRight, Grid, List, CheckCircle } from 'lucide-react'
 import { apiGet } from '../lib/ruckusApi'
-import { saveCredentials, loadCredentials } from '../lib/formStorage'
+import { saveCredentials, loadCredentials, clearCredentials } from '../lib/formStorage'
 import React from 'react' // Added missing import for React.useEffect
 
 interface AssetViewerData {
@@ -120,6 +120,19 @@ export function AssetViewer() {
 
   // Check if form is valid for APs and WLANs (venue ID is optional)
   const isAPsAndWLANsValid = isFormValid
+
+  // Clear form function
+  const clearForm = () => {
+    clearCredentials()
+    setValue('tenantId', '')
+    setValue('clientId', '')
+    setValue('clientSecret', '')
+    setValue('r1Type', 'regular')
+    setValue('mspId', '')
+    setValue('venueId', '')
+    setValue('region', 'na')
+    setState(prev => ({ ...prev, error: undefined, success: undefined }))
+  }
 
   // token retrieval handled via lib/ruckusApi
 
@@ -412,6 +425,10 @@ export function AssetViewer() {
             <button type="button" onClick={testConnection} disabled={state.loading || !isFormValid} className={`btn w-full ${state.loading ? 'btn-copy' : isFormValid ? 'btn-download' : 'btn-secondary'}`}>
               <Server className="w-4 h-4" />
               <span>{state.loading ? 'Testing...' : 'Test Connection'}</span>
+            </button>
+            <button type="button" onClick={clearForm} className="btn btn-secondary w-full">
+              <AlertCircle className="w-4 h-4" />
+              <span>Clear Form</span>
             </button>
             {state.error && (
               <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md flex items-center gap-2">

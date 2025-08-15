@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { getAccessToken } from '../lib/ruckusApi'
 import { apiFetch } from '../lib/apiClient'
 import { loadCredentials } from '../lib/formStorage'
-import { saveCredentials } from '../lib/formStorage'
+import { saveCredentials, clearCredentials } from '../lib/formStorage'
 
 interface ApGroup {
   id: string
@@ -50,6 +50,21 @@ export function ApiUploader() {
     const newCredentials = { ...credentials, ...updates }
     setCredentials(newCredentials)
     saveCredentials(newCredentials)
+  }
+
+  // Clear form function
+  const clearForm = () => {
+    clearCredentials()
+    setCredentials({
+      tenantId: '',
+      clientId: '',
+      clientSecret: '',
+      r1Type: 'regular',
+      mspId: '',
+      venueId: '',
+      region: 'na'
+    })
+    setState(prev => ({ ...prev, error: undefined, success: undefined }))
   }
 
   // Get data from navigation state
@@ -339,6 +354,11 @@ export function ApiUploader() {
                 The venue ID where APs will be uploaded
               </p>
             </div>
+            
+            <button type="button" onClick={clearForm} className="btn btn-secondary w-full">
+              <AlertCircle className="w-4 h-4" />
+              <span>Clear Form</span>
+            </button>
           </div>
         </div>
 
