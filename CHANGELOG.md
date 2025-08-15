@@ -5,6 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2025-08-15
+
+### Added
+- **MSP R1 Mode Support**
+  - Full MSP mode with target tenant delegation
+  - End Customer management and selection
+  - Target tenant routing for all API operations
+  - Proper header management for MSP operations (`x-rks-tenantid`)
+  - Click-to-select functionality for End Customers and Venues
+  - MSP customer selection in Asset Viewer and API Upload pages
+
+### Fixed
+- **Styling Issues**
+  - Fixed tip notification styling with proper color classes
+  - Added comprehensive Tailwind CSS utility classes
+  - Fixed hover states, focus states, and disabled states
+  - Improved visual consistency across all pages
+  - Fixed progress bars, modal overlays, and status indicators
+
+### Changed
+- **API Upload Page**
+  - Added MSP R1 mode support with target tenant selection
+  - Added "Get Venues" functionality for MSP mode
+  - Removed unnecessary MSP ID field requirement
+  - Enhanced user experience with clickable venue selection
+
+### Technical Improvements
+- **CSS Architecture**
+  - Added 213 new CSS utility classes
+  - Improved responsive design and accessibility
+  - Enhanced visual feedback and user interactions
+  - Better color consistency and contrast ratios
+
 ## [1.0.0] - 2025-08-14
 
 ### Added

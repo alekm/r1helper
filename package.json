@@ -1,6 +1,6 @@
 {
   "name": "r1helper",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "SmartZone to Ruckus One Migration Tool - Privacy-focused CSV conversion and API integration",
   "private": true,
   "type": "module",
