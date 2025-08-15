@@ -317,6 +317,13 @@ export function AssetViewer() {
       const data = watch()
       
       console.log('MSP Customers API path: /mspCustomers (top-level query)')
+      console.log('MSP credentials:', {
+        r1Type: data.r1Type,
+        clientId: data.clientId,
+        mspId: data.mspId,
+        region: data.region,
+        hasTenantId: !!data.tenantId
+      })
       
       const response = await apiGet(
         data.r1Type,
@@ -325,9 +332,17 @@ export function AssetViewer() {
         data.r1Type === 'msp' && data.mspId ? { mspId: data.mspId } : undefined
       )
       
+      console.log('MSP Customers response:', response)
+      
       const mspCustomers = Array.isArray(response) ? response : (response as { data?: MspCustomer[] }).data || []
-      setState(prev => ({ ...prev, loading: false, mspCustomers, success: `Successfully pulled ${mspCustomers.length} End Customers` }))
+      
+      if (mspCustomers.length === 0) {
+        setState(prev => ({ ...prev, loading: false, mspCustomers: [], success: 'No End Customers found for this MSP account' }))
+      } else {
+        setState(prev => ({ ...prev, loading: false, mspCustomers, success: `Successfully pulled ${mspCustomers.length} End Customers` }))
+      }
     } catch (err) {
+      console.error('MSP Customers error:', err)
       setState(prev => ({ ...prev, loading: false, error: `Failed to pull MSP customers: ${err instanceof Error ? err.message : 'Unknown error'}` }))
     }
   }
