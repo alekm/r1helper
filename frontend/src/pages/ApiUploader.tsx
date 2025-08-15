@@ -103,38 +103,30 @@ export function ApiUploader() {
       }
 
       const apGroupsData = await apGroupsResponse.json()
-      const groupIds = Array.isArray(apGroupsData) ? apGroupsData : (apGroupsData as { data?: string[] }).data || []
+      console.log('AP Groups response:', apGroupsData)
       
-      // Fetch individual group details to get names
+      // Extract group names and IDs from the response
       const existingApGroups = new Set<string>()
       const groupIdToNameMap = new Map<string, string>()
       
-      for (const groupId of groupIds) {
-        try {
-          const groupIdString = typeof groupId === 'string' ? groupId : 
-                               typeof groupId === 'object' && groupId !== null ? String(groupId.id || groupId) : 
-                               String(groupId)
+      if (Array.isArray(apGroupsData)) {
+        for (const group of apGroupsData) {
+          const groupId = String(group.id || '')
+          const groupName = String(group.name || '')
           
-          const detailPath = `/venues/${credentials.venueId}/apGroups/${groupIdString}`
-          const groupResponse = await apiFetch(region, detailPath, {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'X-Tenant-ID': credentials.tenantId,
-              ...(credentials.r1Type === 'msp' && credentials.mspId ? { 'X-MSP-ID': credentials.mspId } : {})
-            }
-          })
+          console.log(`Processing group: ID="${groupId}", Name="${groupName}"`)
           
-          if (groupResponse.ok) {
-            const groupData = await groupResponse.json()
-            const groupName = String(groupData.name || '')
-            if (groupName) {
-              existingApGroups.add(groupName)
-              groupIdToNameMap.set(groupName, groupIdString)
-            }
+          if (groupId && groupName && groupName.trim() !== '') {
+            existingApGroups.add(groupName.trim())
+            groupIdToNameMap.set(groupName.trim(), groupId)
+            console.log(`Added group "${groupName.trim()}" with ID "${groupId}"`)
+          } else if (groupId && group.isDefault) {
+            // Handle default group (usually doesn't have a name)
+            const defaultGroupName = 'Default'
+            existingApGroups.add(defaultGroupName)
+            groupIdToNameMap.set(defaultGroupName, groupId)
+            console.log(`Added default group "${defaultGroupName}" with ID "${groupId}"`)
           }
-        } catch (groupErr) {
-          console.warn(`Failed to fetch details for AP Group ${groupId}:`, groupErr)
-          // Continue with other groups even if one fails
         }
       }
 
@@ -143,6 +135,11 @@ export function ApiUploader() {
       // Validate that all specified AP Groups in the CSV exist
       const csvApGroups = new Set(state.data.rows.map(row => row[3]).filter(groupId => groupId && groupId.trim() !== ''))
       const missingApGroups = [...csvApGroups].filter(groupId => !existingApGroups.has(groupId))
+
+      console.log('Found AP Groups:', Array.from(existingApGroups))
+      console.log('CSV AP Groups:', Array.from(csvApGroups))
+      console.log('Missing AP Groups:', missingApGroups)
+      console.log('Group ID to Name Map:', Object.fromEntries(groupIdToNameMap))
 
       if (missingApGroups.length > 0) {
         throw new Error(`The following AP Groups do not exist in venue ${credentials.venueId}: ${missingApGroups.join(', ')}. Please create these AP Groups first.`)
