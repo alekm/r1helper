@@ -11,7 +11,7 @@ exports.handler = async (event, context) => {
   // Enable CORS for browser requests
   const headers = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Tenant-ID, X-MSP-ID',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Tenant-ID, X-MSP-ID, x-rks-tenantid',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Content-Type': 'application/json'
   };
@@ -68,6 +68,9 @@ exports.handler = async (event, context) => {
     }
     if (event.headers['x-tenant-id']) {
       upstreamHeaders['x-tenant-id'] = event.headers['x-tenant-id'];
+    }
+    if (event.headers['x-rks-tenantid']) {
+      upstreamHeaders['x-rks-tenantid'] = event.headers['x-rks-tenantid'];
     }
     if (event.headers['x-msp-id']) {
       upstreamHeaders['x-msp-id'] = event.headers['x-msp-id'];
