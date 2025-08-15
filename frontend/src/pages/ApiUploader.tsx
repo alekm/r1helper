@@ -77,8 +77,8 @@ export function ApiUploader() {
 
       setState(prev => ({ ...prev, uploadProgress: 40 }))
 
-      // Validate that all AP Groups in the CSV exist
-      const csvApGroups = new Set(state.data.rows.map(row => row[3]).filter(Boolean))
+      // Validate that all specified AP Groups in the CSV exist
+      const csvApGroups = new Set(state.data.rows.map(row => row[3]).filter(groupId => groupId && groupId.trim() !== ''))
       const missingApGroups = [...csvApGroups].filter(groupId => !existingApGroups.has(groupId))
 
       if (missingApGroups.length > 0) {
@@ -110,17 +110,25 @@ export function ApiUploader() {
 
       setState(prev => ({ ...prev, uploadProgress: 60 }))
 
-      // Upload each AP individually to the venue's AP group
+      // Upload each AP individually to the venue
       const results = []
       for (let i = 0; i < apiData.length; i++) {
         const ap = apiData[i]
         const apGroupId = state.data.rows[i][3] // AP Group from CSV (column 4)
         
-        if (!apGroupId) {
-          throw new Error(`AP "${ap.name}" has no AP Group specified. All APs must have an AP Group.`)
-        }
+        // Determine upload path based on whether AP Group is specified
+        let apUploadPath: string
+        let uploadTarget: string
         
-        const apUploadPath = `/venues/${credentials.venueId}/apGroups/${apGroupId}/aps`
+        if (apGroupId && apGroupId.trim() !== '') {
+          // Upload to specific AP Group
+          apUploadPath = `/venues/${credentials.venueId}/apGroups/${apGroupId}/aps`
+          uploadTarget = `AP Group "${apGroupId}"`
+        } else {
+          // Upload to venue level (no AP Group)
+          apUploadPath = `/venues/${credentials.venueId}/aps`
+          uploadTarget = `venue level (no AP Group)`
+        }
         
         const response = await apiFetch(region, apUploadPath, {
           method: 'POST',
@@ -135,7 +143,7 @@ export function ApiUploader() {
 
         if (!response.ok) {
           const errorText = await response.text()
-          throw new Error(`Failed to upload AP "${ap.name}" to AP Group "${apGroupId}": ${response.status} ${response.statusText} - ${errorText}`)
+          throw new Error(`Failed to upload AP "${ap.name}" to ${uploadTarget}: ${response.status} ${response.statusText} - ${errorText}`)
         }
 
         results.push(await response.json())
@@ -149,7 +157,7 @@ export function ApiUploader() {
         ...prev, 
         loading: false, 
         uploadProgress: 100,
-        success: `Successfully uploaded ${results.length} AP records to Ruckus One venue ${credentials.venueId} using their respective AP Groups!`
+        success: `Successfully uploaded ${results.length} AP records to Ruckus One venue ${credentials.venueId}! APs with AP Groups were assigned to their groups, others were uploaded to venue level.`
       }))
     } catch (error) {
       setState(prev => ({ 
