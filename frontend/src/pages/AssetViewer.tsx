@@ -82,7 +82,7 @@ export function AssetViewer() {
   const [apViewMode, setApViewMode] = useState<'list' | 'grid'>('list')
   const [apItemsPerPage] = useState(20)
 
-  const { register, watch, formState: { errors } } = useForm<AssetViewerData>({
+  const { register, watch, setValue, formState: { errors } } = useForm<AssetViewerData>({
     defaultValues: {
       r1Type: 'regular',
       region: 'na',
@@ -442,13 +442,8 @@ export function AssetViewer() {
                           <div 
                             className="font-medium cursor-pointer hover:text-blue-600 hover:underline transition-colors text-blue-700"
                             onClick={() => {
-                              // Fill the venue-id input field with the venue ID
-                              const venueIdInput = document.querySelector('input[name="venueId"]') as HTMLInputElement;
-                              if (venueIdInput) {
-                                venueIdInput.value = String(venue.id || '');
-                                // Trigger the form validation
-                                venueIdInput.dispatchEvent(new Event('input', { bubbles: true }));
-                              }
+                              // Fill the venue-id input field with the venue ID using React Hook Form
+                              setValue('venueId', String(venue.id || ''));
                               // Show brief visual feedback
                               const element = event?.target as HTMLElement;
                               if (element) {
