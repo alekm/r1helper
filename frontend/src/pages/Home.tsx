@@ -28,18 +28,17 @@ export function Home() {
         <p className="hero-subtitle">SmartZone to Ruckus One Migration Tool</p>
         <p className="hero-description">Convert SmartZone exports, manage Ruckus One assets, and upload configurations seamlessly.</p>
         
-        <div className="flex flex-col items-center mb-4">
-          <div className="flex items-center space-x-2 text-blue-600 font-medium">
-            <ArrowDown className="w-4 h-4" />
-            <span>Start Here</span>
-          </div>
-        </div>
-        
         <div className="hero-buttons">
-          <Link to="/assets" className="btn-primary">
-            <Server className="w-5 h-5" />
-            <span>Asset Viewer</span>
-          </Link>
+          <div className="flex flex-col items-center">
+            <div className="mb-2 flex items-center space-x-2 text-blue-600 font-medium">
+              <ArrowDown className="w-4 h-4" />
+              <span>Start Here</span>
+            </div>
+            <Link to="/assets" className="btn-primary">
+              <Server className="w-5 h-5" />
+              <span>Asset Viewer</span>
+            </Link>
+          </div>
           <Link to="/csv" className="btn-secondary">
             <FileText className="w-5 h-5" />
             <span>Convert SmartZone Data</span>
