@@ -182,6 +182,13 @@ export async function apiGet(
   // For MSP mode, use target tenant ID in header for customer-specific operations
   const tenantIdForHeader = r1Type === 'msp' && targetTenantId ? targetTenantId : creds.tenantId
   
+  const finalHeaders = {
+    Authorization: `Bearer ${token}`,
+    ...(r1Type === 'msp' && !resourcePath.startsWith('/mspCustomers') ? { 'x-rks-tenantid': tenantIdForHeader } : {}),
+    ...(r1Type === 'msp' && msp?.mspId && !resourcePath.startsWith('/mspCustomers') ? { 'X-MSP-ID': msp.mspId } : {}),
+    Accept: '*/*',
+  }
+  
   console.log('API call details:', {
     r1Type,
     resourcePath,
@@ -189,19 +196,19 @@ export async function apiGet(
     tenantIdForHeader,
     willIncludeHeader: r1Type === 'msp' && !resourcePath.startsWith('/mspCustomers'),
     finalHeaders: {
-      Authorization: `Bearer ${token.substring(0, 20)}...`,
-      ...(r1Type === 'msp' && !resourcePath.startsWith('/mspCustomers') ? { 'x-rks-tenantid': tenantIdForHeader } : {}),
-      Accept: 'application/json',
+      ...finalHeaders,
+      Authorization: `Bearer ${token.substring(0, 20)}...`
     }
   })
   
+  console.log('Full request details:', {
+    method: 'GET',
+    url: `${region === 'na' ? 'https://api.ruckus.cloud' : `https://api.ruckus.cloud`}${path}`,
+    headers: finalHeaders
+  })
+  
   const res = await apiFetch(region, path, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      ...(r1Type === 'msp' && !resourcePath.startsWith('/mspCustomers') ? { 'x-rks-tenantid': tenantIdForHeader } : {}),
-      ...(r1Type === 'msp' && msp?.mspId && !resourcePath.startsWith('/mspCustomers') ? { 'X-MSP-ID': msp.mspId } : {}),
-      Accept: 'application/json',
-    },
+    headers: finalHeaders,
   })
   if (!res.ok) {
     let detail = ''
