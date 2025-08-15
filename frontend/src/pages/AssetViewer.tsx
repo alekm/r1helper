@@ -129,16 +129,12 @@ export function AssetViewer() {
     try {
       const data = watch()
       
-      // Determine the API path based on whether venue ID is provided
-      const venueId = data.venueId?.trim()
-      const apiPath = venueId ? `/venues/${venueId}/aps` : '/venues/aps'
-      
-      console.log('APs API path:', apiPath)
+      console.log('APs API path: /venues/aps')
       
       const response = await apiGet(
         data.r1Type,
         { tenantId: data.tenantId, clientId: data.clientId, clientSecret: data.clientSecret, region: data.region },
-        apiPath,
+        '/venues/aps',
         data.r1Type === 'msp' && data.mspId ? { mspId: data.mspId } : undefined
       )
       const accessPoints = Array.isArray(response) ? response : (response as { data?: AccessPoint[] }).data || []
@@ -394,7 +390,7 @@ export function AssetViewer() {
             <div>
               <label className="form-label">Venue ID (for AP Groups)</label>
               <input type="text" {...register('venueId')} className="form-input" placeholder="venue-id" />
-              <p className="text-sm text-gray-600 mt-1">Required for AP Groups. Optional for APs and WLANs - leave blank for tenant-level or enter venue ID for venue-specific data.</p>
+              <p className="text-sm text-gray-600 mt-1">Required for AP Groups. Leave blank for tenant-level data.</p>
             </div>
             <button type="button" onClick={testConnection} disabled={state.loading || !isFormValid} className={`btn w-full ${state.loading ? 'btn-copy' : isFormValid ? 'btn-download' : 'btn-secondary'}`}>
               <Server className="w-4 h-4" />
@@ -412,6 +408,67 @@ export function AssetViewer() {
         <div className="card">
           <div className="card-header"><h2 className="card-title">Pull Assets</h2></div>
           <div className="space-y-6">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Server className="w-5 h-5 text-orange-600" />
+                <h3 className="text-lg font-semibold text-gray-900">Venues</h3>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={pullVenues} disabled={state.loading || !isAPsAndWLANsValid} className={`btn flex-1 ${state.loading ? 'btn-copy' : isAPsAndWLANsValid ? 'btn-download' : 'btn-secondary'}`}>
+                  <RefreshCw className={`w-4 h-4 ${state.loading ? 'animate-spin' : ''}`} />
+                  <span>Get Venues</span>
+                </button>
+                {state.venues && (
+                  <>
+                    <button onClick={() => copyToClipboard(state.venues)} className="btn btn-copy"><Copy className="w-4 h-4" /><span>Copy</span></button>
+                    <button onClick={() => downloadJson(state.venues, 'venues')} className="btn btn-download"><Download className="w-4 h-4" /><span>Download</span></button>
+                  </>
+                )}
+              </div>
+              {state.venues && (
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-gray-900 mb-2">Venues ({state.venues.length})</h4>
+                  <div className="space-y-2">
+                    {state.venues.map((venue, index) => (
+                      <div key={venue.id || index} className="flex items-center justify-between p-2 bg-white rounded border">
+                        <div>
+                          <div 
+                            className="font-medium cursor-pointer hover:text-blue-600 hover:underline transition-colors text-blue-700"
+                            onClick={() => {
+                              // Fill the venue-id input field with the venue ID
+                              const venueIdInput = document.querySelector('input[name="venueId"]') as HTMLInputElement;
+                              if (venueIdInput) {
+                                venueIdInput.value = String(venue.id || '');
+                                // Trigger the form validation
+                                venueIdInput.dispatchEvent(new Event('input', { bubbles: true }));
+                              }
+                              // Show brief visual feedback
+                              const element = event?.target as HTMLElement;
+                              if (element) {
+                                const originalText = element.textContent;
+                                element.textContent = 'Selected!';
+                                element.classList.add('text-green-600');
+                                setTimeout(() => {
+                                  element.textContent = originalText;
+                                  element.classList.remove('text-green-600');
+                                }, 1000);
+                              }
+                            }}
+                            title="Click to select this venue ID"
+                          >
+                            {String(venue.name || '')}
+                          </div>
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          ID: {String(venue.id || '').substring(0, 8)}...
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <Wifi className="w-5 h-5 text-blue-600" />
@@ -616,61 +673,6 @@ export function AssetViewer() {
                           <div className="text-xs text-gray-500">
                             ID: {String(group.id || '').substring(0, 8)}...
                           </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <Server className="w-5 h-5 text-orange-600" />
-                <h3 className="text-lg font-semibold text-gray-900">Venues</h3>
-              </div>
-              <div className="flex gap-2">
-                <button onClick={pullVenues} disabled={state.loading || !isAPsAndWLANsValid} className={`btn flex-1 ${state.loading ? 'btn-copy' : isAPsAndWLANsValid ? 'btn-download' : 'btn-secondary'}`}>
-                  <RefreshCw className={`w-4 h-4 ${state.loading ? 'animate-spin' : ''}`} />
-                  <span>Get Venues</span>
-                </button>
-                {state.venues && (
-                  <>
-                    <button onClick={() => copyToClipboard(state.venues)} className="btn btn-copy"><Copy className="w-4 h-4" /><span>Copy</span></button>
-                    <button onClick={() => downloadJson(state.venues, 'venues')} className="btn btn-download"><Download className="w-4 h-4" /><span>Download</span></button>
-                  </>
-                )}
-              </div>
-              {state.venues && (
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h4 className="font-medium text-gray-900 mb-2">Venues ({state.venues.length})</h4>
-                  <div className="space-y-2">
-                    {state.venues.map((venue, index) => (
-                      <div key={venue.id || index} className="flex items-center justify-between p-2 bg-white rounded border">
-                        <div>
-                          <div 
-                            className="font-medium cursor-pointer hover:text-blue-600 hover:underline transition-colors text-blue-700"
-                            onClick={() => {
-                              navigator.clipboard.writeText(String(venue.id || ''));
-                              // Show brief visual feedback
-                              const element = event?.target as HTMLElement;
-                              if (element) {
-                                const originalText = element.textContent;
-                                element.textContent = 'Copied!';
-                                element.classList.add('text-green-600');
-                                setTimeout(() => {
-                                  element.textContent = originalText;
-                                  element.classList.remove('text-green-600');
-                                }, 1000);
-                              }
-                            }}
-                            title="Click to copy venue ID"
-                          >
-                            {String(venue.name || '')}
-                          </div>
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          ID: {String(venue.id || '').substring(0, 8)}...
                         </div>
                       </div>
                     ))}
