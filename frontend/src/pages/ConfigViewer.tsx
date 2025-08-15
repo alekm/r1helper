@@ -12,9 +12,28 @@ interface ConfigViewerData {
   siteId: string
 }
 
+interface AccessPoint {
+  id: string
+  name: string
+  serialNumber: string
+  type: string
+  ipAddress?: string
+  status: string
+  [key: string]: unknown
+}
+
+interface WLAN {
+  id: string
+  name: string
+  ssid: string
+  security: string
+  vlan?: number
+  [key: string]: unknown
+}
+
 interface ConfigData {
-  accessPoints?: any[]
-  wlans?: any[]
+  accessPoints?: AccessPoint[]
+  wlans?: WLAN[]
   loading: boolean
   error?: string
 }
@@ -188,11 +207,11 @@ export function ConfigViewer() {
     }
   }
 
-  const copyToClipboard = (data: any) => {
+  const copyToClipboard = (data: unknown) => {
     navigator.clipboard.writeText(JSON.stringify(data, null, 2))
   }
 
-  const downloadConfig = (data: any, type: string) => {
+  const downloadConfig = (data: unknown, type: string) => {
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')

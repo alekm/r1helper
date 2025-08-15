@@ -20,8 +20,16 @@ export default defineConfig({
         configure: (proxy: any) => {
           proxy.on('proxyReq', (proxyReq: any) => {
             // Strip dev Origin/Referer to avoid upstream CORS/CSRF checks
-            try { proxyReq.removeHeader('origin') } catch {}
-            try { proxyReq.removeHeader('referer') } catch {}
+            try { 
+              proxyReq.removeHeader('origin') 
+            } catch {
+              // Ignore if header doesn't exist
+            }
+            try { 
+              proxyReq.removeHeader('referer') 
+            } catch {
+              // Ignore if header doesn't exist
+            }
           })
         },
       },
@@ -35,8 +43,16 @@ export default defineConfig({
         },
         configure: (proxy: any) => {
           proxy.on('proxyReq', (proxyReq: any) => {
-            try { proxyReq.removeHeader('origin') } catch {}
-            try { proxyReq.removeHeader('referer') } catch {}
+            try { 
+              proxyReq.removeHeader('origin') 
+            } catch {
+              // Ignore if header doesn't exist
+            }
+            try { 
+              proxyReq.removeHeader('referer') 
+            } catch {
+              // Ignore if header doesn't exist
+            }
           })
         },
       },
@@ -50,8 +66,16 @@ export default defineConfig({
         },
         configure: (proxy: any) => {
           proxy.on('proxyReq', (proxyReq: any) => {
-            try { proxyReq.removeHeader('origin') } catch {}
-            try { proxyReq.removeHeader('referer') } catch {}
+            try { 
+              proxyReq.removeHeader('origin') 
+            } catch {
+              // Ignore if header doesn't exist
+            }
+            try { 
+              proxyReq.removeHeader('referer') 
+            } catch {
+              // Ignore if header doesn't exist
+            }
           })
         },
       },

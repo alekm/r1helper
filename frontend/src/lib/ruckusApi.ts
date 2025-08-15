@@ -30,7 +30,7 @@ function setCookie(name: string, value: string, maxAgeSeconds: number) {
 }
 
 function getCookie(name: string): string | null {
-  const match = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/([.$?*|{}()\[\]\\/+^])/g, '\\$1') + '=([^;]*)'))
+  const match = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/([.$?*|{}()[\]\\/+^])/g, '\\$1') + '=([^;]*)'))
   return match ? decodeURIComponent(match[1]) : null
 }
 
@@ -53,10 +53,10 @@ async function requestToken(
     }
     try {
       return await res.json()
-    } catch (parseError) {
+    } catch {
       // Try to get response as text for debugging
       const responseText = await res.text()
-      console.error('JSON parse error:', parseError instanceof Error ? parseError.message : 'Unknown error', 'Response:', responseText.substring(0, 200))
+      console.error('JSON parse error: Response:', responseText.substring(0, 200))
       throw new Error(`${res.status} ${res.statusText} (invalid JSON response)`) 
     }
   }
@@ -66,7 +66,7 @@ async function requestToken(
   try { 
     const errorResponse = await res.json()
     detail = JSON.stringify(errorResponse)
-  } catch (parseError) {
+  } catch {
     // If JSON parsing fails, try to get as text
     try {
       const errorText = await res.text()
@@ -141,7 +141,7 @@ export async function getAccessToken(creds: RuckusCredentials): Promise<string> 
   throw new Error(`Token request failed: ${lastErr instanceof Error ? lastErr.message : 'Unknown error'}`)
 }
 
-export function buildUrl(_r1Type: R1Type, tenantId: string, resourcePath: string, _region?: RuckusRegion, _msp?: MspScope): string {
+export function buildUrl(_r1Type: R1Type, tenantId: string, resourcePath: string): string {
   // Some resources are tenant-global and exposed at root (e.g., /venues/*, /networks)
   if (resourcePath.startsWith('/venues') || resourcePath.startsWith('/networks')) {
     return resourcePath
@@ -157,9 +157,9 @@ export async function apiGet(
   creds: RuckusCredentials,
   resourcePath: string,
   msp?: MspScope
-): Promise<any> {
+): Promise<unknown> {
   const token = await getAccessToken(creds)
-  const path = buildUrl(r1Type, creds.tenantId, resourcePath, creds.region, msp)
+  const path = buildUrl(r1Type, creds.tenantId, resourcePath)
   const region = creds.region || DEFAULT_REGION
   
   const res = await apiFetch(region, path, {
@@ -172,7 +172,11 @@ export async function apiGet(
   })
   if (!res.ok) {
     let detail = ''
-    try { detail = JSON.stringify(await res.json()) } catch {}
+    try { 
+      detail = JSON.stringify(await res.json()) 
+    } catch {
+      // Ignore JSON parsing errors for error details
+    }
     throw new Error(`API request failed: ${res.status} ${res.statusText}${detail ? ` - ${detail}` : ''}`)
   }
   return res.json()

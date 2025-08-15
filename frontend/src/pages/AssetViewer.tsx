@@ -12,9 +12,45 @@ interface AssetViewerData {
   region?: 'na' | 'eu' | 'asia'
 }
 
+interface AccessPoint {
+  id: string
+  name: string
+  serialNumber: string
+  type: string
+  ipAddress?: string
+  status: string
+  hostname?: string
+  serial?: string
+  serial_no?: string
+  mac?: string
+  macAddress?: string
+  model?: string
+  deviceModel?: string
+  state?: string
+  [key: string]: unknown
+}
+
+interface WLAN {
+  id: string
+  name: string
+  ssid: string
+  security: string
+  vlan?: number
+  wlan?: {
+    ssid: string
+    wlanSecurity: string
+    enabled: boolean
+    vlanId?: number
+  }
+  securityType?: string
+  enabled?: boolean
+  vlanId?: number
+  [key: string]: unknown
+}
+
 interface AssetDataState {
-  accessPoints?: any[]
-  wlans?: any[]
+  accessPoints?: AccessPoint[]
+  wlans?: WLAN[]
   loading: boolean
   error?: string
 }
@@ -46,7 +82,7 @@ export function AssetViewer() {
       const testPath = ''
       await apiGet(
         data.r1Type,
-        { tenantId: data.tenantId, clientId: data.clientId, clientSecret: data.clientSecret, region: data.region } as any,
+        { tenantId: data.tenantId, clientId: data.clientId, clientSecret: data.clientSecret, region: data.region },
         testPath,
         data.r1Type === 'msp' && data.mspId ? { mspId: data.mspId } : undefined
       )
@@ -60,13 +96,14 @@ export function AssetViewer() {
     setState(prev => ({ ...prev, loading: true }))
     try {
       const data = watch()
-      const aps = await apiGet(
+      const response = await apiGet(
         data.r1Type,
         { tenantId: data.tenantId, clientId: data.clientId, clientSecret: data.clientSecret, region: data.region },
         '/venues/aps',
         data.r1Type === 'msp' && data.mspId ? { mspId: data.mspId } : undefined
       )
-      setState(prev => ({ ...prev, loading: false, accessPoints: aps.data || aps }))
+      const accessPoints = Array.isArray(response) ? response : (response as { data?: AccessPoint[] }).data || []
+      setState(prev => ({ ...prev, loading: false, accessPoints }))
     } catch (err) {
       setState(prev => ({ ...prev, loading: false, error: `Failed to pull access points: ${err instanceof Error ? err.message : 'Unknown error'}` }))
     }
@@ -76,21 +113,22 @@ export function AssetViewer() {
     setState(prev => ({ ...prev, loading: true }))
     try {
       const data = watch()
-      const wlans = await apiGet(
+      const response = await apiGet(
         data.r1Type,
         { tenantId: data.tenantId, clientId: data.clientId, clientSecret: data.clientSecret, region: data.region },
         '/networks',
         data.r1Type === 'msp' && data.mspId ? { mspId: data.mspId } : undefined
       )
-      setState(prev => ({ ...prev, loading: false, wlans: wlans.data || wlans }))
+      const wifiNetworks = Array.isArray(response) ? response : (response as { data?: WLAN[] }).data || []
+      setState(prev => ({ ...prev, loading: false, wlans: wifiNetworks }))
     } catch (err) {
       setState(prev => ({ ...prev, loading: false, error: `Failed to pull WLANs: ${err instanceof Error ? err.message : 'Unknown error'}` }))
     }
   }
 
-  const copyToClipboard = (data: any) => navigator.clipboard.writeText(JSON.stringify(data, null, 2))
+  const copyToClipboard = (data: unknown) => navigator.clipboard.writeText(JSON.stringify(data, null, 2))
 
-  const downloadJson = (data: any, name: string) => {
+  const downloadJson = (data: unknown, name: string) => {
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -100,7 +138,7 @@ export function AssetViewer() {
     URL.revokeObjectURL(url)
   }
 
-  const downloadApsCsv = (aps: any[]) => {
+  const downloadApsCsv = (aps: AccessPoint[]) => {
     const headers = [
       'serial number',
       'name',

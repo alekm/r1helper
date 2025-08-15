@@ -4,6 +4,24 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { getAccessToken } from '../lib/ruckusApi'
 import { apiFetch } from '../lib/apiClient'
 
+interface ApGroup {
+  id: string
+  name: string
+  [key: string]: unknown
+}
+
+interface ApData {
+  name: string
+  description: string | null
+  serialNumber: string
+  model: null
+  tags: string[]
+  deviceGps?: {
+    latitude: string
+    longitude: string
+  }
+}
+
 interface CsvData {
   headers: string[]
   rows: string[][]
@@ -73,7 +91,7 @@ export function ApiUploader() {
       }
 
       const apGroupsData = await apGroupsResponse.json()
-      const existingApGroups = new Set(apGroupsData.map((group: any) => group.id || group.name))
+      const existingApGroups = new Set(apGroupsData.map((group: ApGroup) => group.id || group.name))
 
       setState(prev => ({ ...prev, uploadProgress: 40 }))
 
@@ -89,7 +107,7 @@ export function ApiUploader() {
 
       // Convert CSV data to Ruckus One API format
       const apiData = state.data.rows.map(row => {
-        const apData: any = {
+        const apData: ApData = {
           name: row[0],           // AP Name
           description: row[1] || null,  // Description
           serialNumber: row[2],   // Serial Number
