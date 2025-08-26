@@ -434,7 +434,7 @@ export function ConfigViewer() {
                           </div>
                         </div>
                         <div className={`px-2 py-1 rounded text-xs font-medium ${
-                          (ap.status === 'online' || ap.state === 'online') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          (ap.status === 'online' || ap.state === 'online' || ap.status === 'Operational' || ap.state === 'Operational') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                         }`}>
                           {String(ap.status || ap.state || 'unknown')}
                         </div>
