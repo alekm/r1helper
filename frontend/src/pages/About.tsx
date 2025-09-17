@@ -195,6 +195,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
                 SmartZone exports or uploading APs directly to Ruckus One, R1Helper provides 
                 the tools you need to work more efficiently and securely.
               </p>
+              <p>
+                R1Helper is part of the <a 
+                  href="https://r1tools.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-orange-600 hover:text-orange-700 font-medium inline-flex items-center gap-1"
+                >
+                  R1Tools <ExternalLink className="w-3 h-3" />
+                </a> suite of Ruckus One management tools, providing comprehensive solutions for network administrators.
+              </p>
               
               <p>
                 Our mission is to simplify complex network migrations by providing 

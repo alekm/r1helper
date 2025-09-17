@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Settings, CheckCircle, Sparkles, Zap, Server, FileText, Upload } from 'lucide-react'
+import { Settings, CheckCircle, Sparkles, Zap, Server, FileText, Upload, ExternalLink } from 'lucide-react'
 
 export function Home() {
   const features = [
@@ -107,8 +107,25 @@ export function Home() {
         </div>
       </div>
 
-
-
+      {/* R1Tools Section */}
+      <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-2xl shadow-xl p-8 border border-orange-200">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Part of the R1Tools Suite</h2>
+          <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+            R1Helper is just one of the powerful tools in the R1Tools collection. 
+            Explore more Ruckus One management utilities and resources.
+          </p>
+          <a 
+            href="https://r1tools.com" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-orange-600 hover:to-orange-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+          >
+            <ExternalLink className="w-5 h-5" />
+            Visit R1Tools
+          </a>
+        </div>
+      </div>
 
     </div>
   )

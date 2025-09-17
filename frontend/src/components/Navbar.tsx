@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Home, Info, Sparkles, Server, FileText, Upload } from 'lucide-react'
+import { Home, Info, Sparkles, Server, FileText, Upload, ExternalLink } from 'lucide-react'
 
 
 export function Navbar() {
@@ -27,7 +27,18 @@ export function Navbar() {
             </div>
           </Link>
           
-          <div className="nav-links">
+          <div className="flex items-center gap-4">
+            <a 
+              href="https://r1tools.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="r1tools-link"
+            >
+              <ExternalLink className="w-4 h-4" />
+              <span>R1Tools</span>
+            </a>
+            
+            <div className="nav-links">
             {navItems.map(({ path, label, icon: Icon }) => (
               <Link
                 key={path}
@@ -38,6 +49,7 @@ export function Navbar() {
                 <span>{label}</span>
               </Link>
             ))}
+            </div>
           </div>
         </div>
       </div>
