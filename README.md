@@ -1,8 +1,8 @@
-# R1Helper v0.9b
+# R1Helper v1.1.0
 
 A comprehensive, privacy-focused tool for SmartZone to Ruckus One migration, featuring CSV conversion and direct API integration.
 
-## 🚀 Version 0.9b Features
+## 🚀 Version 1.1.0 Features
 
 - **SmartZone CSV Converter**: Convert SmartZone AP exports to Ruckus One bulk import format
 - **Direct API Integration**: Upload APs directly to Ruckus One via API
