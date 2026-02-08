@@ -1,11 +1,7 @@
 import { useState, useRef } from 'react'
 import { Download, FileText, RefreshCw, AlertCircle, CheckCircle, ArrowRight } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-
-interface CsvData {
-  headers: string[]
-  rows: string[][]
-}
+import { parseCsv, downloadCsv, type CsvData } from '../lib/csvParser'
 
 interface ConversionState {
   originalData: CsvData | null
@@ -19,6 +15,7 @@ interface ConversionSettings {
   apGroup: string
   latitude: string
   longitude: string
+  globalUntaggedVlanId: string
 }
 
 export function CsvConverter() {
@@ -26,22 +23,11 @@ export function CsvConverter() {
   const [settings, setSettings] = useState<ConversionSettings>({
     apGroup: '',
     latitude: '',
-    longitude: ''
+    longitude: '',
+    globalUntaggedVlanId: ''
   })
   const fileInputRef = useRef<HTMLInputElement>(null)
   const navigate = useNavigate()
-
-  const parseCsv = (csvText: string): CsvData => {
-    const lines = csvText.split('\n').filter(line => line.trim() !== '')
-    if (lines.length === 0) throw new Error('CSV file is empty')
-    
-    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''))
-    const rows = lines.slice(1).map(line => 
-      line.split(',').map(cell => cell.trim().replace(/"/g, ''))
-    )
-    
-    return { headers, rows }
-  }
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -122,10 +108,23 @@ export function CsvConverter() {
       if (settings.longitude && settings.longitude.includes('.')) {
         const decimalDigits = settings.longitude.split('.')[1]
         if (decimalDigits.length > 6) {
-          setState(prev => ({ 
-            ...prev, 
-            loading: false, 
+          setState(prev => ({
+            ...prev,
+            loading: false,
             error: 'Longitude can contain a maximum of 6 total digits.'
+          }))
+          return
+        }
+      }
+
+      // Validate Global Untagged VLAN ID if provided
+      if (settings.globalUntaggedVlanId) {
+        const vlanId = parseInt(settings.globalUntaggedVlanId)
+        if (isNaN(vlanId) || vlanId < 1 || vlanId > 4094) {
+          setState(prev => ({
+            ...prev,
+            loading: false,
+            error: 'Global Untagged VLAN ID must be between 1 and 4094.'
           }))
           return
         }
@@ -231,21 +230,22 @@ export function CsvConverter() {
       //   [], // Empty row
       // ]
 
-      const newHeaders = ['AP Name', 'Description', 'Serial Number', 'AP Group', 'Tags', 'Latitude', 'Longitude']
-      
+      const newHeaders = ['AP Name', 'Serial Number', 'Description', 'AP Group', 'Tags', 'Latitude', 'Longitude', 'Global Untagged VLAN ID']
+
       const newRows = state.originalData.rows.map(row => {
         const apName = row[1] || '' // "AP Name"
         const description = row[2] || '' // "Description"
         const serialNumber = row[serialColumnIndex] || '' // "Serial"
-        
+
         return [
-          apName,        // AP Name
-          description,   // Description (only if it exists in input)
-          serialNumber,  // Serial Number
-          settings.apGroup, // AP Group
-          '',           // Tags (left blank)
-          settings.latitude, // Latitude
-          settings.longitude, // Longitude
+          apName,                         // AP Name
+          serialNumber,                   // Serial Number
+          description,                    // Description (only if it exists in input)
+          settings.apGroup,               // AP Group
+          '',                             // Tags (left blank)
+          settings.latitude,              // Latitude
+          settings.longitude,             // Longitude
+          settings.globalUntaggedVlanId,  // Global Untagged VLAN ID
         ]
       })
       
@@ -264,32 +264,21 @@ export function CsvConverter() {
     }
   }
 
-  const downloadCsv = (data: CsvData, filename: string) => {
+  const handleDownloadCsv = (data: CsvData, filename: string) => {
     // Add comment rows for bulk import format
     const commentRows = [
       ['# AP name is mandatory. The name can only contain between 2 and 32 characters. Only the following characters are allowed: \'a-z\', \'A-Z\', \'0-9\', space and other special characters (!""#$%\'()*+,-./:;<=>?@[]^_{|}~) except &,` or $('],
+      ['# Serial number is mandatory - exactly 12 digits, must not start with 0'],
       ['# Description - maximal length is 180 characters'],
-      ['# Serial number is mandatory'],
       ['# AP Group - must match an existing AP group'],
       ['# Tags - separated by semicolon \';\''],
-      ['# Latitude - between -90 and 90, and contains a maximum of 6-digit decimal'],
-      ['# Longitude - between -180 and 180, and contains a maximum of 6-digit decimal'],
+      ['# Latitude - between -90 and 90, and contains a maximum of 6 decimal places'],
+      ['# Longitude - between -180 and 180, and contains a maximum of 6 decimal places'],
+      ['# Global Untagged VLAN ID - positive integer between 1 and 4094 (optional)'],
       [], // Empty row
     ]
-    
-    const csvContent = [
-      ...commentRows.map(row => row.join(',')),
-      data.headers.join(','),
-      ...data.rows.map(row => row.join(','))
-    ].join('\n')
-    
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = filename
-    a.click()
-    URL.revokeObjectURL(url)
+
+    downloadCsv(data, filename, commentRows)
   }
 
   const resetConverter = () => {
@@ -297,7 +286,8 @@ export function CsvConverter() {
     setSettings({
       apGroup: '',
       latitude: '',
-      longitude: ''
+      longitude: '',
+      globalUntaggedVlanId: ''
     })
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
@@ -384,6 +374,20 @@ export function CsvConverter() {
                       />
                     </div>
                   </div>
+
+                  <div>
+                    <label className="form-label">Global Untagged VLAN ID (Optional)</label>
+                    <input
+                      type="number"
+                      value={settings.globalUntaggedVlanId}
+                      onChange={(e) => setSettings(prev => ({ ...prev, globalUntaggedVlanId: e.target.value }))}
+                      className="form-input"
+                      placeholder="1-4094"
+                    />
+                    <p className="text-sm text-gray-500 mt-1">
+                      Must be between 1 and 4094
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
@@ -459,8 +463,8 @@ export function CsvConverter() {
                 </div>
 
                 <div className="flex gap-2">
-                  <button 
-                    onClick={() => downloadCsv(state.convertedData!, `ruckus-one-import-${Date.now()}.csv`)} 
+                  <button
+                    onClick={() => handleDownloadCsv(state.convertedData!, `ruckus-one-import-${Date.now()}.csv`)}
                     className="btn btn-download flex-1"
                   >
                     <Download className="w-4 h-4" />

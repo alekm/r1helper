@@ -137,3 +137,8 @@ temp/
 
 # Ruckus One API schemas
 R1API/
+
+# Cursor / Claude / AI assistant metadata (do not commit)
+.cursor/
+.claude/
+.aider*

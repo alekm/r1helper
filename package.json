@@ -10,7 +10,12 @@
     "preview": "cd frontend && npm run preview",
     "install-deps": "cd frontend && npm install",
     "clean": "cd frontend && rm -rf dist node_modules",
-    "postinstall": "cd netlify/functions && npm install"
+    "postinstall": "cd netlify/functions && npm install",
+    "lint": "cd frontend && npm run lint",
+    "lint:fix": "cd frontend && npm run lint -- --fix",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "type-check": "cd frontend && tsc --noEmit"
   },
   "dependencies": {
     "node-fetch": "^2.6.7"
@@ -38,5 +43,8 @@
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=8.0.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.8.1"
   }
 }

@@ -7,10 +7,36 @@ const REGIONAL_ENDPOINTS = {
   asia: 'https://api.asia.ruckus.cloud'
 };
 
+// Helper function to validate allowed origins
+const isAllowedOrigin = (origin) => {
+  if (!origin) return false;
+
+  // Allow production domain
+  if (origin === 'https://r1helper.com' || origin === 'https://www.r1helper.com') {
+    return true;
+  }
+
+  // Allow Netlify preview/branch deploys (e.g., deploy-preview-123--r1helper.netlify.app)
+  if (origin.match(/^https:\/\/.*--r1helper\.netlify\.app$/)) {
+    return true;
+  }
+
+  // Allow localhost for development (any port)
+  if (origin.match(/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/)) {
+    return true;
+  }
+
+  return false;
+};
+
 exports.handler = async (event, context) => {
+  // Validate origin for CORS
+  const origin = event.headers.origin || event.headers.Origin;
+  const allowedOrigin = isAllowedOrigin(origin) ? origin : 'https://r1helper.com';
+
   // Enable CORS for browser requests
   const headers = {
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': allowedOrigin,
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Tenant-ID, X-MSP-ID, x-rks-tenantid',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Content-Type': 'application/json'

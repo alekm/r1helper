@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { apiGet, apiPost } from '../lib/ruckusApi'
 import { loadCredentials } from '../lib/formStorage'
 import { saveCredentials, clearCredentials } from '../lib/formStorage'
+import { parseCsv, type CsvData } from '../lib/csvParser'
 
 
 
@@ -17,11 +18,6 @@ interface ApData {
     latitude: string
     longitude: string
   }
-}
-
-interface CsvData {
-  headers: string[]
-  rows: string[][]
 }
 
 interface MspCustomer {
@@ -266,18 +262,6 @@ export function ApiUploader() {
     navigate('/csv', { state: { convertedData: state.data } })
   }
 
-  const parseCsv = (csvText: string): CsvData => {
-    const lines = csvText.split('\n').filter(line => line.trim() !== '')
-    if (lines.length === 0) throw new Error('CSV file is empty')
-    
-    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''))
-    const rows = lines.slice(1).map(line => 
-      line.split(',').map(cell => cell.trim().replace(/"/g, ''))
-    )
-    
-    return { headers, rows }
-  }
-
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
@@ -430,18 +414,16 @@ export function ApiUploader() {
                             <div>
                               <div 
                                 className="font-medium cursor-pointer hover:text-blue-600 hover:underline transition-colors text-blue-700"
-                                onClick={() => {
+                                onClick={(e) => {
                                   updateCredentials({ targetTenantId: String(customer.tenant_id || '') });
-                                  const element = event?.target as HTMLElement;
-                                  if (element) {
-                                    const originalText = element.textContent;
-                                    element.textContent = 'Selected!';
-                                    element.classList.add('text-green-600');
-                                    setTimeout(() => {
-                                      element.textContent = originalText;
-                                      element.classList.remove('text-green-600');
-                                    }, 1000);
-                                  }
+                                  const element = e.currentTarget;
+                                  const originalText = element.textContent;
+                                  element.textContent = 'Selected!';
+                                  element.classList.add('text-green-600');
+                                  setTimeout(() => {
+                                    element.textContent = originalText;
+                                    element.classList.remove('text-green-600');
+                                  }, 1000);
                                 }}
                                 title="Click to select this customer's tenant ID"
                               >
@@ -491,18 +473,16 @@ export function ApiUploader() {
                             <div>
                               <div 
                                 className="font-medium cursor-pointer hover:text-blue-600 hover:underline transition-colors text-blue-700"
-                                onClick={() => {
+                                onClick={(e) => {
                                   updateCredentials({ venueId: String(venue.id || '') });
-                                  const element = event?.target as HTMLElement;
-                                  if (element) {
-                                    const originalText = element.textContent;
-                                    element.textContent = 'Selected!';
-                                    element.classList.add('text-green-600');
-                                    setTimeout(() => {
-                                      element.textContent = originalText;
-                                      element.classList.remove('text-green-600');
-                                    }, 1000);
-                                  }
+                                  const element = e.currentTarget;
+                                  const originalText = element.textContent;
+                                  element.textContent = 'Selected!';
+                                  element.classList.add('text-green-600');
+                                  setTimeout(() => {
+                                    element.textContent = originalText;
+                                    element.classList.remove('text-green-600');
+                                  }, 1000);
                                 }}
                                 title="Click to select this venue ID"
                               >
